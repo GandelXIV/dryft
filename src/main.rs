@@ -48,6 +48,9 @@ trait Compiler {
     fn meth_div(&mut self) -> String;
     fn meth_mod(&mut self) -> String;
     fn meth_puti(&mut self) -> String;
+    fn fun_copy(&mut self) -> String;
+    fn fun_drop(&mut self) -> String;
+    
     fn defn_method(&mut self, m: &Method) -> String;
     
     fn compile_block(&mut self, code: &str) -> String {
@@ -85,6 +88,7 @@ trait Compiler {
                 continue;
             }
             let target = &match word {
+                "" => {"".into()}
                 ":" => { isdefinition = true; "".into() }
                 ";" => { isendofdefin = true; "".into() }
                 "+" => self.meth_add(),
@@ -98,6 +102,7 @@ trait Compiler {
                     // println!("{}", custom);
                     // self.user_method(custom)
                     // println!("{} {:?}", word, &fd.user_functions);
+                    println!("calling:{}", &custom);
                     self.user_method(word)
                 }
             };
@@ -121,9 +126,7 @@ trait Compiler {
                 blockstack.last_mut().expect("idk").push_str(target);
             }
         }
-        let mut f = blockstack.last().unwrap().clone();
-        f.truncate(f.len() - 3);
-        return f;
+        blockstack.last().unwrap().clone()
     }
 }
 
@@ -171,8 +174,16 @@ impl Compiler for C99Backend {
         "puti();".to_string()
     }
 
+    fn fun_copy(&mut self) -> String {
+        "copy();".to_string()
+    }
+
+    fn fun_drop(&mut self) -> String {
+        "drop();".to_string()
+    }
+
     fn defn_method(&mut self, m: &Method) -> String {
-        format!("void {}(){{ {} }}", m.name.as_ref().unwrap(), m.block)
+        format!("void {} (){{ {} }}\n", m.name.as_ref().unwrap(), m.block)
     }
 }
 
@@ -195,16 +206,33 @@ fn repl() {
             .expect("Failed to read line");
         if input.trim().is_empty() {
             continue;
-        }   
-        std::fs::write(".temp.c", backend.compile_program(&input)).unwrap();
-        let output = Command::new("bash")
-            .arg("-c")
-            .arg("gcc .temp.c && ./a.out")
-            .output()
-            .expect("Failed to execute bash");
-        println!("Out | {}", &String::from_utf8_lossy(&output.stdout));
-        println!("Err | {}", &String::from_utf8_lossy(&output.stderr));
+        }
+        match input.trim() {
+            "#open" => {
+                let mut fname = String::new();  
+                io::stdin()
+                    .read_line(&mut fname)
+                    .expect("Failed to read line");
+                // println!("{}", &fname.trim());
+                let src = &String::from_utf8(std::fs::read(fname.trim()).unwrap()).unwrap();
+                build_and_run(&mut backend, src);
+                continue;
+            }
+            _ => {}
+        }
+        build_and_run(&mut backend, &*input);
     }
+}
+
+fn build_and_run<B: Compiler>(backend: &mut B,c: &str) {
+    std::fs::write(".temp.c", backend.compile_program(c)).unwrap();
+    let output = Command::new("bash")
+        .arg("-c")
+        .arg("gcc .temp.c && ./a.out")
+        .output()
+        .expect("Failed to execute bash");
+    println!("Out | {}", &String::from_utf8_lossy(&output.stdout));
+    println!("Err | {}", &String::from_utf8_lossy(&output.stderr));
 }
 
 fn main() {

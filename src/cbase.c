@@ -13,6 +13,7 @@ void psh(int x) {
   }
 }
 
+
 int pop() {
   if (sptr <= 0) {
     // PANIC
@@ -54,5 +55,15 @@ void mod() {
 }
 
 void puti() {
-  printf("%d", pop());
+  printf("%d ", pop());
+}
+
+void copy() {
+  int a = pop();
+  psh(a);
+  psh(a);
+}
+
+void drop() {
+  pop();
 }
