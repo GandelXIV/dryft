@@ -1,11 +1,12 @@
 #include <stdio.h>
+#include <stddef.h>
 
 #define STACK_SIZE 1000
 
-int stack [STACK_SIZE];
-int* sptr = stack;
+size_t stack [STACK_SIZE];
+size_t* sptr = stack;
 
-void psh(int x) {
+void psh(size_t x) {
   *sptr = x;
   sptr += 1;
   if (sptr >= stack + STACK_SIZE) {
@@ -14,7 +15,7 @@ void psh(int x) {
 }
 
 
-int pop() {
+size_t pop() {
   if (sptr <= 0) {
     // PANIC
   }
@@ -22,7 +23,7 @@ int pop() {
   return *sptr;
 }
 
-int top() {
+size_t top() {
   return *sptr;
 }
 
@@ -37,29 +38,33 @@ void mul() {
 }
 
 void sub() {
-  int b = pop();
-  int a = pop();
+  size_t b = pop();
+  size_t a = pop();
   psh(a - b);
 }
 
 void div() {
-  int b = pop();
-  int a = pop();
+  size_t b = pop();
+  size_t a = pop();
   psh(a / b);
 }
 
 void mod() {
-  int b = pop();
-  int a = pop();
+  size_t b = pop();
+  size_t a = pop();
   psh(a % b);
 }
 
 void puti() {
-  printf("%d ", pop());
+  printf("%zu ", pop());
+}
+
+void putstr() {
+  printf("%s ", (char*) pop());
 }
 
 void copy() {
-  int a = pop();
+  size_t a = pop();
   psh(a);
   psh(a);
 }

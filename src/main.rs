@@ -48,6 +48,7 @@ trait Compiler {
     fn meth_div(&mut self) -> String;
     fn meth_mod(&mut self) -> String;
     fn meth_puti(&mut self) -> String;
+    fn meth_puts(&mut self) -> String;
     fn fun_copy(&mut self) -> String;
     fn fun_drop(&mut self) -> String;
     
@@ -97,6 +98,10 @@ trait Compiler {
                 "/" => self.meth_div(),
                 "mod" => self.meth_mod(),
                 "puti" => self.meth_puti(),
+                "puts" => self.meth_puts(),
+                word if word.starts_with('"') && word.ends_with('"') => {
+                    self.push_literal(LiteralType::Text(word.into()))
+                }
                 word if re_int.is_match(word) => self.push_literal(LiteralType::Number(word.parse::<isize>().unwrap())),
                 custom => {
                     // println!("{}", custom);
@@ -136,7 +141,7 @@ impl Compiler for C99Backend {
     fn push_literal(&mut self, lit: LiteralType) -> String {
         match lit {
             LiteralType::Number(n) => format!("psh({});", n),
-            _ => todo!(),
+            LiteralType::Text(s) => format!("psh((size_t) {});", s)
         }
     }
 
@@ -172,6 +177,10 @@ impl Compiler for C99Backend {
 
     fn meth_puti(&mut self) -> String {
         "puti();".to_string()
+    }
+
+    fn meth_puts(&mut self) -> String {
+        "putstr();".to_string()
     }
 
     fn fun_copy(&mut self) -> String {
