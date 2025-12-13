@@ -29,11 +29,11 @@ fn repl() {
                 // println!("{}", &fname.trim());
                 let src = &String::from_utf8(std::fs::read(fname.trim()).unwrap()).unwrap();
                 build_and_run(src);
-                continue;
             }
-            _ => {}
+            _ => {
+                build_and_run(&*format!("{}", input));
+            }
         }
-        build_and_run(&*format!("{}", input));
     }
 }
 
