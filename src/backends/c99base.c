@@ -14,7 +14,6 @@ void psh(size_t x) {
   }
 }
 
-
 size_t pop() {
   if (sptr <= 0) {
     // PANIC

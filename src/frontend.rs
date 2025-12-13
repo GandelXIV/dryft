@@ -88,6 +88,17 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 		}};
 	}
 
+	macro_rules! add_function {
+		() => {
+			let meta = cs.metastack.pop().unwrap();
+			let body = cs.bodystack.pop().unwrap();
+
+			let fname = meta.get(0).expect("DRYFTERR - No function name provided");
+			let f = backend.create_function(fname.as_ref(), body);
+			add2body!(&f);
+		}
+	}
+
 	match cs.word.as_ref() {
 		"fun:" => new_definition!(Function),
 
@@ -95,12 +106,14 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 			if cs.defnstack.pop().unwrap() != DefinitionTypes::Function {
 				panic!("DRYFTERR - Misplaced function block ending");
 			}
-			let meta = cs.metastack.pop().unwrap();
-			let body = cs.bodystack.pop().unwrap();
+			add_function!();
+		}
 
-			let fname = meta.get(0).expect("DRYFTERR - No function name provided");
-			let f = backend.create_function(fname.as_ref(), body);
-			add2body!(&f);
+		";" => {
+			match cs.defnstack.pop().expect("DRYFTERR - Misplaced ;") {
+				DefinitionTypes::Function => { add_function!(); }
+				_ => todo!(),
+			}
 		}
 
 		fname if *cs.defnstack.last().unwrap() == DefinitionTypes::Function && cs.metastack.last().unwrap().is_empty() => 
@@ -126,6 +139,15 @@ mod tests {
 		let mut cs = compile(backend, "fun: inc\n\t1 + ;fun");
 		assert_eq!(cs.log_tokens, makeStrings(vec!["fun:", "inc", "1", "+", ";fun"]));
 		//assert_eq!(cs.defstack, vec![(DefinitionTypes::Function, makeStrings(vec!["inc", "1", "+", ";"]))]);
+	}
+
+	#[test]
+	fn semicolon_ending() {
+		let mut backend = MockBackend {};
+		let mut cs = compile(backend, "fun: id ;");
+		let mut backend = MockBackend {};
+		let mut cs2 = compile(backend, "fun: id ;fun");
+		assert_eq!(cs.out, cs2.out);
 	}
 
 	#[test]
