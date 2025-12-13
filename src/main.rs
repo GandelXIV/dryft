@@ -46,8 +46,9 @@ fn build_and_run(c: &str) {
         .arg("gcc .temp.c && ./a.out")
         .output()
         .expect("Failed to execute bash");
-    println!("Out | {}", &String::from_utf8_lossy(&output.stdout));
-    println!("Err | {}", &String::from_utf8_lossy(&output.stderr));
+    println!("{}", &String::from_utf8_lossy(&output.stdout));
+    /*println!("Out | {}", &String::from_utf8_lossy(&output.stdout));
+    println!("Err | {}", &String::from_utf8_lossy(&output.stderr));*/
 }
 
 

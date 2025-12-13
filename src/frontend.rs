@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use regex::Regex;
 use crate::backends::Backend;
 use crate::backends::MockBackend;
 use crate::backends::c99::C99Backend;
@@ -62,7 +63,6 @@ pub fn compile<B: Backend>(mut backend: B, code: &str) -> CompileState {
 		}
 	}
 	new_token!(); // last word may not be whitespace separated
-	println!("{}", cs.bodystack[0]);
 	cs.out = Some(cs.bodystack.remove(0));
 
 	return cs
@@ -74,6 +74,8 @@ pub fn compile_full<B: Backend>(mut backend: B, code: &str) -> String {
 }
 
 fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
+    let regexint = Regex::new(r"^-?\d+$").unwrap();
+
 	macro_rules! new_definition {
 	    ($variant:ident) => {{
 	        cs.defnstack.push(DefinitionTypes::$variant);
@@ -119,7 +121,18 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 		fname if *cs.defnstack.last().unwrap() == DefinitionTypes::Function && cs.metastack.last().unwrap().is_empty() => 
 			cs.metastack.last_mut().unwrap().push(fname.into()),
 
+		/// actual code must start here, as to not be confused for function name
+
+		num if regexint.is_match(num) => add2body!(&backend.push_integer(num)),
+
 		"+" => add2body!(backend.fun_add()),
+		"-" => add2body!(backend.fun_sub()),
+		"*" => add2body!(backend.fun_mul()),
+		"/" => add2body!(backend.fun_div()),
+		"mod" => add2body!(backend.fun_mod()),
+		"^" => add2body!(backend.fun_copy()),
+		"v" => add2body!(backend.fun_drop()),
+		"puti" => add2body!(backend.act_print_integer()),
 		
 		word => add2body!(word),
 	}
