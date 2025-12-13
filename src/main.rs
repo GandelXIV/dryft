@@ -31,7 +31,7 @@ fn repl() {
                 build_and_run(src);
             }
             _ => {
-                build_and_run(&*format!("{}", input));
+                build_and_run(&*format!("fun: main {} ;", input));
             }
         }
     }
@@ -43,12 +43,12 @@ fn build_and_run(c: &str) {
     // move this into backend in the future
     let output = Command::new("bash")
         .arg("-c")
-        .arg("gcc .temp.c && ./a.out")
+        .arg("gcc -w .temp.c && ./a.out")
         .output()
         .expect("Failed to execute bash");
-    println!("{}", &String::from_utf8_lossy(&output.stdout));
-    /*println!("Out | {}", &String::from_utf8_lossy(&output.stdout));
-    println!("Err | {}", &String::from_utf8_lossy(&output.stderr));*/
+    //println!("{}", &String::from_utf8_lossy(&output.stdout));
+    println!("Out | {}", &String::from_utf8_lossy(&output.stdout));
+    println!("Err | {}", &String::from_utf8_lossy(&output.stderr));
 }
 
 
