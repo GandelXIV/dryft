@@ -39,7 +39,8 @@ fn repl() {
 
 fn build_and_run(c: &str) {
     let mut backend = C99Backend {};
-    std::fs::write(".temp.c", frontend::compile(backend, c).out).unwrap();
+    std::fs::write(".temp.c", frontend::compile(backend, c).out.expect("No compiled code :(")).unwrap();
+    // move this into backend in the future
     let output = Command::new("bash")
         .arg("-c")
         .arg("gcc .temp.c && ./a.out")
@@ -51,5 +52,5 @@ fn build_and_run(c: &str) {
 
 
 fn main() {
-    repl()
+    repl();
 }
