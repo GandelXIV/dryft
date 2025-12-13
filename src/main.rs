@@ -33,13 +33,13 @@ fn repl() {
             }
             _ => {}
         }
-        build_and_run(&*format!("fun: main {} ;", input));
+        build_and_run(&*format!("{}", input));
     }
 }
 
 fn build_and_run(c: &str) {
     let mut backend = C99Backend {};
-    std::fs::write(".temp.c", frontend::compile(backend, c).out.expect("No compiled code :(")).unwrap();
+    std::fs::write(".temp.c", frontend::compile_full(backend, c)).unwrap();
     // move this into backend in the future
     let output = Command::new("bash")
         .arg("-c")

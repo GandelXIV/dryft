@@ -62,9 +62,15 @@ pub fn compile<B: Backend>(mut backend: B, code: &str) -> CompileState {
 		}
 	}
 	new_token!(); // last word may not be whitespace separated
+	println!("{}", cs.bodystack[0]);
 	cs.out = Some(cs.bodystack.remove(0));
 
 	return cs
+}
+
+pub fn compile_full<B: Backend>(mut backend: B, code: &str) -> String {
+	let built = compile(backend, code).out.expect("No code compiled :(");
+	B::complete( &built )
 }
 
 fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
@@ -101,14 +107,7 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 			cs.metastack.last_mut().unwrap().push(fname.into()),
 
 		"+" => add2body!(backend.fun_add()),
-		/*";fun" => {
-			if cs.defstack.last().0 != DefinitionTypes::Function {
-				panic!("DRYFTERR - Invalid endind inside function");
-			}
-			let mut block = cs.defstack.pop().1;
-			let fname = block.remove(0);
-			let f = backend.create_function()
-		}*/
+		
 		word => add2body!(word),
 	}
 }

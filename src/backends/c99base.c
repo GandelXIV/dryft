@@ -72,3 +72,9 @@ void copy() {
 void drop() {
   pop();
 }
+
+int main() {
+  fun_main();
+  return 0;
+}
+
