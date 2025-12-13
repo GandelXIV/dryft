@@ -1,10 +1,16 @@
-fun: inc 1 + ;
+fun inc 1 + ;
 
-fun: double ^ + ; 
+fun double ^ + ;
 
-fun: main
-	# unambigious version of 6/2(1+2) #
+fun quadra 
+	double double 
+end
+
+fun main
+	# unambigious versions of 6/2(1+2) #
 	6 2 / 1 2 + * puti
+	6 2 1 + 2 * / puti
 	1 inc puti 
 	3 double puti
-;fun
+	0 infinite
+endfun

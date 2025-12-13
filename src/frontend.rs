@@ -27,6 +27,8 @@ pub struct CompileState {
 	pub bodystack: Vec<String>,
 
 	pub iscomment: bool,
+	pub isstring: bool,
+	pub newstring: String,
 }
 
 
@@ -42,7 +44,13 @@ impl CompileState {
 			metastack: vec![],
 			bodystack: vec![String::new()],
 			iscomment: false,
+			isstring: false,
+			newstring: String::new(),
 		}
+	}
+
+	fn add2body(&mut self, s: &str) {
+		self.bodystack.last_mut().unwrap().push_str(s)
 	}
 }
 
@@ -66,8 +74,18 @@ pub fn compile<B: Backend>(mut backend: B, code: &str) -> CompileState {
 					cs.iscomment = false;
 				}
 			}
+			c if cs.isstring => {
+				if c == '"' {
+					cs.isstring = false;
+					cs.add2body(&backend.push_string(&cs.newstring));
+					cs.newstring = String::new();
+				} else {
+					cs.newstring.push(c);
+				}
+			}
 			' ' | '\n' | '\t' => new_token!(),
 			'#' => cs.iscomment = true,
+			'"' => cs.isstring = true,
 			other => cs.word.push(other),
 		}
 	}
@@ -93,12 +111,6 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 	    }};
 	}
 
-	macro_rules! add2body {
-		($generated:expr) => {{
-			cs.bodystack.last_mut().unwrap().push_str($generated)
-		}};
-	}
-
 	macro_rules! add_function {
 		() => {
 			let meta = cs.metastack.pop().unwrap();
@@ -109,21 +121,21 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 			cs.functions.insert(fname.clone(), body.clone());
 
 			let f = backend.create_function(fname.as_ref(), body);
-			add2body!(&f);
+			cs.add2body(&f);
 		}
 	}
 
 	match cs.word.as_ref() {
-		"fun:" => new_definition!(Function),
+		"fun:" | "fun" => new_definition!(Function),
 
-		";fun" => {
+		";fun" | "endfun" => {
 			if cs.defnstack.pop().unwrap() != DefinitionTypes::Function {
 				panic!("DRYFTERR - Misplaced function block ending");
 			}
 			add_function!();
 		}
 
-		";" => {
+		";" | "end" => {
 			match cs.defnstack.pop().expect("DRYFTERR - Misplaced ;") {
 				DefinitionTypes::Function => { add_function!(); }
 				_ => todo!(),
@@ -137,20 +149,20 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 
 		/// actual code must start here, as to not be confused for function name
 
-		fun if cs.functions.contains_key(fun) => add2body!(&backend.user_function(fun)),
+		fun if cs.functions.contains_key(fun) => cs.add2body(&backend.user_function(fun)),
 
-		num if regexint.is_match(num) => add2body!(&backend.push_integer(num)),
+		num if regexint.is_match(num) => cs.add2body(&backend.push_integer(num)),
 
-		"+" => add2body!(backend.fun_add()),
-		"-" => add2body!(backend.fun_sub()),
-		"*" => add2body!(backend.fun_mul()),
-		"/" => add2body!(backend.fun_div()),
-		"mod" => add2body!(backend.fun_mod()),
-		"^" => add2body!(backend.fun_copy()),
-		"v" => add2body!(backend.fun_drop()),
-		"puti" => add2body!(backend.act_print_integer()),
+		"+" => cs.add2body(backend.fun_add()),
+		"-" => cs.add2body(backend.fun_sub()),
+		"*" => cs.add2body(backend.fun_mul()),
+		"/" => cs.add2body(backend.fun_div()),
+		"mod" => cs.add2body(backend.fun_mod()),
+		"^" => cs.add2body(backend.fun_copy()),
+		"v" => cs.add2body(backend.fun_drop()),
+		"puti" => cs.add2body(backend.act_print_integer()),
 		
-		word => add2body!(word),
+		word => panic!("DRYFTERR - Unknown token '{}'", word),
 	}
 }
 
@@ -184,6 +196,12 @@ mod tests {
 		let mut backend = C99Backend {};
 		let mut cs = compile(backend, "fun: sum3 + + ;fun");
 
-		assert_eq!( cs.out.unwrap(), "void fun_sum3() { add(); add(); }".to_string() );
+		assert_eq!( cs.out.unwrap(), "void fun_sum3() { add(); add(); }\n".to_string() );
+	}
+
+	#[test]
+	fn strings() {
+		let mut backend = C99Backend {};
+		let mut cs = compile(backend, "fun idk \" # fake comment # \" ; ");
 	}
 }

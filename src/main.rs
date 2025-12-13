@@ -1,6 +1,8 @@
 use std::process::Command;
+use std::env;
 use std::io;
 use std::io::Write;
+use std::fs;
 
 
 pub mod backends;
@@ -26,14 +28,21 @@ fn repl() {
                 io::stdin()
                     .read_line(&mut fname)
                     .expect("Failed to read line");
-                // println!("{}", &fname.trim());
-                let src = &String::from_utf8(std::fs::read(fname.trim()).unwrap()).unwrap();
-                build_and_run(src);
+                rbr(fname.trim());
             }
             _ => {
                 build_and_run(&*format!("fun: main {} ;", input));
             }
         }
+    }
+}
+
+fn rbr(f: &str) {
+    let src = &String::from_utf8(fs::read(f).unwrap_or("".into())).unwrap();
+    if src.is_empty() {
+        println!("Nothing to compile :/");
+    } else {
+        build_and_run(src);   
     }
 }
 
@@ -53,5 +62,10 @@ fn build_and_run(c: &str) {
 
 
 fn main() {
-    repl();
+    let args: Vec<String> = env::args().collect();
+    if args.len() > 1 {
+        rbr(&args[1]);
+    } else {
+        repl();
+    }
 }

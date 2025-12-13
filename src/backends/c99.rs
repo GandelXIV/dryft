@@ -12,7 +12,7 @@ impl Backend for C99Backend {
 	/// TODO: hash function names to avoid clashes with internals and allow symbol only names
 
 	fn create_function(&self, fname: &str, body: String) -> String {
-		format!("void fun_{}() {{ {}}}", fname, body)
+		format!("void fun_{}() {{ {}}}\n", fname, body)
 	}
 
 	fn user_function(&self, fname: &str) -> String {
@@ -53,5 +53,9 @@ impl Backend for C99Backend {
 
 	fn push_integer(&self, i: &str) -> String {
 		format!("psh({i}); ")
+	}
+
+	fn push_string(&self, s: &str) -> String {
+		format!("psh(\"{s}\"); ")
 	}
 }
