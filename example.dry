@@ -1,9 +1,0 @@
-
-: fun twice 2 * ;
-: fun duo copy + ;
-: fun quadra twice twice ;
-
-: fun main 
-	4 quadra puti
-	3 duo puti
-;
