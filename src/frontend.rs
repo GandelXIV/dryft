@@ -25,6 +25,8 @@ pub struct CompileState {
 	pub defnstack: Vec<DefinitionTypes>,
 	pub metastack: Vec<Vec<String>>,
 	pub bodystack: Vec<String>,
+
+	pub iscomment: bool,
 }
 
 
@@ -39,6 +41,7 @@ impl CompileState {
 			defnstack: vec![],
 			metastack: vec![],
 			bodystack: vec![String::new()],
+			iscomment: false,
 		}
 	}
 }
@@ -58,7 +61,13 @@ pub fn compile<B: Backend>(mut backend: B, code: &str) -> CompileState {
 
 	for letter in code.chars() {
 		match letter {
+			c if cs.iscomment => {
+				if c == '#' {
+					cs.iscomment = false;
+				}
+			}
 			' ' | '\n' | '\t' => new_token!(),
+			'#' => cs.iscomment = true,
 			other => cs.word.push(other),
 		}
 	}

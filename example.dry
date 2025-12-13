@@ -3,6 +3,8 @@ fun: inc 1 + ;
 fun: double ^ + ; 
 
 fun: main
+	# unambigious version of 6/2(1+2) #
+	6 2 / 1 2 + * puti
 	1 inc puti 
 	3 double puti
 ;fun
