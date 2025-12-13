@@ -9,8 +9,14 @@ impl Backend for C99Backend {
 		cbase
 	}
 
+	/// TODO: hash function names to avoid clashes with internals and allow symbol only names
+
 	fn create_function(&self, fname: &str, body: String) -> String {
 		format!("void fun_{}() {{ {}}}", fname, body)
+	}
+
+	fn user_function(&self, fname: &str) -> String {
+		format!("fun_{fname}(); ")
 	}
 
 	fn fun_add(&self) -> &'static str {

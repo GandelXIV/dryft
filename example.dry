@@ -3,6 +3,6 @@ fun: inc 1 + ;
 fun: double ^ + ; 
 
 fun: main
-	1 fun_inc(); puti 
-	3 fun_double(); puti
+	1 inc puti 
+	3 double puti
 ;fun

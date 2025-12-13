@@ -96,6 +96,9 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 			let body = cs.bodystack.pop().unwrap();
 
 			let fname = meta.get(0).expect("DRYFTERR - No function name provided");
+
+			cs.functions.insert(fname.clone(), body.clone());
+
 			let f = backend.create_function(fname.as_ref(), body);
 			add2body!(&f);
 		}
@@ -118,10 +121,14 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 			}
 		}
 
+		mac if (false) => {} // future for macro expansion
+
 		fname if *cs.defnstack.last().unwrap() == DefinitionTypes::Function && cs.metastack.last().unwrap().is_empty() => 
 			cs.metastack.last_mut().unwrap().push(fname.into()),
 
 		/// actual code must start here, as to not be confused for function name
+
+		fun if cs.functions.contains_key(fun) => add2body!(&backend.user_function(fun)),
 
 		num if regexint.is_match(num) => add2body!(&backend.push_integer(num)),
 

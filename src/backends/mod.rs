@@ -5,6 +5,7 @@ pub trait Backend {
 
 	fn create_function(&self, fname: &str, body: String) -> String;
 	fn push_integer(&self, i: &str) -> String;
+	fn user_function(&self, f: &str) -> String;
 
 	fn fun_add(&self) -> &'static str;
 	fn fun_sub(&self) -> &'static str;
@@ -59,6 +60,10 @@ impl Backend for MockBackend {
 	}
 
 	fn create_function(&self, fname: &str, body: String) -> String {
+		"".to_string()
+	}
+
+	fn user_function(&self, fname: &str) -> String {
 		"".to_string()
 	}
 
