@@ -125,6 +125,12 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 		}
 	}
 
+	macro_rules! add_builtin {
+		($prop:ident) => {{
+			cs.add2body(backend.$prop())
+		}}
+	}
+
 	match cs.word.as_ref() {
 		"fun:" | "fun" => new_definition!(Function),
 
@@ -155,17 +161,17 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 
 		num if regexint.is_match(num) => cs.add2body(&backend.push_integer(num)),
 
-		"+" => cs.add2body(backend.fun_add()),
-		"-" => cs.add2body(backend.fun_sub()),
-		"*" => cs.add2body(backend.fun_mul()),
-		"/" => cs.add2body(backend.fun_div()),
-		"mod" => cs.add2body(backend.fun_mod()),
-		"^" => cs.add2body(backend.fun_copy()),
-		"v" => cs.add2body(backend.fun_drop()),
-		"puti" => cs.add2body(backend.act_print_integer()),
-		"puts" => cs.add2body(backend.act_print_string()),
+		"+" => add_builtin!(fun_add),
+		"-" => add_builtin!(fun_sub),
+		"*" => add_builtin!(fun_mul),
+		"/" => add_builtin!(fun_div),
+		"mod" => add_builtin!(fun_mod),
+		"^" => add_builtin!(fun_copy),
+		"v" => add_builtin!(fun_drop),
+		"puti" => add_builtin!(act_print_integer),
+		"puts" => add_builtin!(act_print_string),
 		
-		word => panic!("DRYFTERR - Unknown token '{}'", word),
+		word => println!("DRYFTERR - Unknown token '{}'", word),
 	}
 }
 
