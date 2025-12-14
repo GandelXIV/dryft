@@ -4,7 +4,6 @@ use std::io;
 use std::io::Write;
 use std::fs;
 
-use anyhow;
 use serde::Deserialize;
 use toml;
 
@@ -46,8 +45,11 @@ fn repl(targetspec: TargetSpec) {
                 let src = format!("fun: main {} ;", input);
                 let mut backend = DefaultBackend {};
                 fs::write(&targetspec.intermediate, frontend::compile_full(backend, &src)).unwrap();
-                externalize(&targetspec.externalize);
-                interpret(targetspec.interpret.clone().unwrap().as_ref());
+                if let Err(e) = externalize(&targetspec.externalize) {
+                    println!("{}", e);
+                } else {
+                    interpret(targetspec.interpret.clone().unwrap().as_ref());
+                }
             }
         }
     }
@@ -110,7 +112,7 @@ fn main() {
     let target_name = "c99"; // change this based on cli selection
     let target_raw = String::from_utf8(fs::read(&format!("src/targets/{target_name}.toml")).expect("Unknown target")).expect("Bad utf8 in target description");
     let target_toml: TargetDesc = toml::from_str(&target_raw).expect("Invalid target description");
-    /// TODO: add external dependency checks
+    // TODO: add external dependency checks
     let targetspec = target_toml.linux; // change this based on current platform
     if args.len() > 1 {
         build_file(&args[1], &targetspec.intermediate);

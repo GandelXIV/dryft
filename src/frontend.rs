@@ -153,7 +153,7 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 		fname if *cs.defnstack.last().unwrap() == DefinitionTypes::Function && cs.metastack.last().unwrap().is_empty() => 
 			cs.metastack.last_mut().unwrap().push(fname.into()),
 
-		/// actual code must start here, as to not be confused for function name
+		// actual code must start here, as to not be confused for function name
 
 		fun if cs.functions.contains_key(fun) => {
 			cs.add2body(&backend.user_function(fun));
@@ -175,7 +175,7 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 	}
 }
 
-fn makeStrings(v: Vec<&str>) -> Vec<String> {
+fn make_strings(v: Vec<&str>) -> Vec<String> {
 	v.into_iter().map(String::from).collect()
 }
 
@@ -187,8 +187,8 @@ mod tests {
 	fn simple_parse() {
 		let mut backend = MockBackend {};
 		let mut cs = compile(backend, "fun: inc\n\t1 + ;fun");
-		assert_eq!(cs.log_tokens, makeStrings(vec!["fun:", "inc", "1", "+", ";fun"]));
-		//assert_eq!(cs.defstack, vec![(DefinitionTypes::Function, makeStrings(vec!["inc", "1", "+", ";"]))]);
+		assert_eq!(cs.log_tokens, make_strings(vec!["fun:", "inc", "1", "+", ";fun"]));
+		//assert_eq!(cs.defstack, vec![(DefinitionTypes::Function, make_strings(vec!["inc", "1", "+", ";"]))]);
 	}
 
 	#[test]
