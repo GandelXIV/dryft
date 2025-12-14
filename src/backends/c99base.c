@@ -6,7 +6,7 @@
 size_t stack [STACK_SIZE];
 size_t* sptr = stack;
 
-void psh(size_t x) {
+inline static void psh(size_t x) {
   *sptr = x;
   sptr += 1;
   if (sptr >= stack + STACK_SIZE) {
@@ -14,7 +14,7 @@ void psh(size_t x) {
   }
 }
 
-size_t pop() {
+inline static size_t pop() {
   if (sptr <= 0) {
     // PANIC
   }
@@ -22,53 +22,53 @@ size_t pop() {
   return *sptr;
 }
 
-size_t top() {
+inline static size_t top() {
   return *sptr;
 }
 
 /* define methods */
 
-void add() {
+inline static void add() {
   psh(pop() + pop());
 }
 
-void mul() {
+inline static void mul() {
   psh(pop() * pop());
 }
 
-void sub() {
+inline static void sub() {
   size_t b = pop();
   size_t a = pop();
   psh(a - b);
 }
 
-void div() {
+inline static void div() {
   size_t b = pop();
   size_t a = pop();
   psh(a / b);
 }
 
-void mod() {
+inline static void mod() {
   size_t b = pop();
   size_t a = pop();
   psh(a % b);
 }
 
-void puti() {
+inline static void puti() {
   printf("%zu ", pop());
 }
 
-void putstr() {
+inline static void putstr() {
   printf("%s ", (char*) pop());
 }
 
-void copy() {
+inline static void copy() {
   size_t a = pop();
   psh(a);
   psh(a);
 }
 
-void drop() {
+inline static void drop() {
   pop();
 }
 
@@ -76,4 +76,3 @@ int main() {
   fun_main();
   return 0;
 }
-

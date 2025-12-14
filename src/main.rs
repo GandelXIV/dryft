@@ -83,7 +83,7 @@ fn interpret(cmd: &str) {
 fn bash(cmd: &str) -> (String, String) {
     let output = Command::new("bash")
         .arg("-c")
-        .arg("gcc -w .temp.c && ./a.out")
+        .arg(cmd)
         .output()
         .expect("Failed to execute bash");
     (String::from_utf8_lossy(&output.stdout).to_string(), String::from_utf8_lossy(&output.stderr).to_string())
