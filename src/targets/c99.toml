@@ -1,0 +1,5 @@
+[linux]
+dependencies = [ "gcc" ]
+intermediate = ".temp.c"
+externalize = "gcc -w .temp.c"
+interpret = "./a.out"

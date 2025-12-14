@@ -5,7 +5,8 @@ use std::io::Write;
 use std::fs;
 
 use anyhow;
-
+use serde::Deserialize;
+use toml;
 
 pub mod backends;
 pub mod frontend;
@@ -15,7 +16,7 @@ use backends::Backend;
 
 type DefaultBackend = C99Backend;
 
-fn repl() {
+fn repl(targetspec: TargetSpec) {
     loop {
         print!("Dryft repl> ");
         io::stdout().flush().unwrap();   // flush so it appears immediately
@@ -37,9 +38,9 @@ fn repl() {
             _ => {
                 let src = format!("fun: main {} ;", input);
                 let mut backend = DefaultBackend {};
-                fs::write(".temp.c", frontend::compile_full(backend, &src)).unwrap();
-                externalize("gcc -w .temp.c");
-                interpret("./a.out");
+                fs::write(&targetspec.intermediate, frontend::compile_full(backend, &src)).unwrap();
+                externalize(&targetspec.externalize);
+                interpret(targetspec.interpret.clone().unwrap().as_ref());
             }
         }
     }
@@ -80,13 +81,30 @@ fn bash(cmd: &str) -> (String, String) {
     (String::from_utf8_lossy(&output.stdout).to_string(), String::from_utf8_lossy(&output.stderr).to_string())
 }
 
+#[derive(Deserialize)]
+struct TargetDesc {
+    linux: TargetSpec
+}
+
+#[derive(Deserialize)]
+struct TargetSpec {
+    dependencies: Vec<String>,
+    intermediate: String,
+    externalize: String,
+    interpret: Option<String>,
+}
+
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+    let target_name = "c99"; // change this one based on client args
+    let target_raw = String::from_utf8(fs::read(&format!("src/targets/{target_name}.toml")).expect("Unknown target")).expect("Bad utf8 in target description");
+    let target_toml: TargetDesc = toml::from_str(&target_raw).expect("Invalid target description");
+    let targetspec = target_toml.linux; // change this based on current platform
     if args.len() > 1 {
-        build_file(&args[1], ".temp.c");
-        externalize("gcc -w .temp.c");
+        build_file(&args[1], &targetspec.intermediate);
+        externalize(&targetspec.externalize).unwrap();
     } else {
-        repl();
+        repl(targetspec);
     }
 }
