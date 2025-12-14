@@ -35,6 +35,13 @@ fn repl(targetspec: TargetSpec) {
                     .expect("Failed to read line");
                 rbr(fname.trim());
             }*/
+            ".help" | "help" => {
+                println!(".help/help  => display this screen");
+                println!(".exit/.quit => leave the REPL, terminating this process");
+            }
+            ".exit" | ".quit" => {
+                break
+            }
             _ => {
                 let src = format!("fun: main {} ;", input);
                 let mut backend = DefaultBackend {};
@@ -72,6 +79,7 @@ fn interpret(cmd: &str) {
     println!("{}", stdout);  
 }
 
+// returns stdout and stderr post cmd execution
 fn bash(cmd: &str) -> (String, String) {
     let output = Command::new("bash")
         .arg("-c")
@@ -82,24 +90,27 @@ fn bash(cmd: &str) -> (String, String) {
 }
 
 #[derive(Deserialize)]
-struct TargetDesc {
+struct TargetDesc { 
+    // only provides linux support for now, windows/mac support in the future
     linux: TargetSpec
 }
 
+// platform independent
 #[derive(Deserialize)]
 struct TargetSpec {
-    dependencies: Vec<String>,
-    intermediate: String,
-    externalize: String,
-    interpret: Option<String>,
+    dependencies: Vec<String>, // binaries used by the below
+    intermediate: String, // file to write dryftc output to
+    externalize: String, // command describing how to use an external compiler to finalize compilation. 
+    interpret: Option<String>, // command to run the final product
 }
 
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let target_name = "c99"; // change this one based on client args
+    let target_name = "c99"; // change this based on cli selection
     let target_raw = String::from_utf8(fs::read(&format!("src/targets/{target_name}.toml")).expect("Unknown target")).expect("Bad utf8 in target description");
     let target_toml: TargetDesc = toml::from_str(&target_raw).expect("Invalid target description");
+    /// TODO: add external dependency checks
     let targetspec = target_toml.linux; // change this based on current platform
     if args.len() > 1 {
         build_file(&args[1], &targetspec.intermediate);
