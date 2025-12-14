@@ -128,7 +128,7 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 	match cs.word.as_ref() {
 		"fun:" | "fun" => new_definition!(Function),
 
-		";fun" | "endfun" => {
+		";fun" | "endfun" | ":fun" => {
 			if cs.defnstack.pop().unwrap() != DefinitionTypes::Function {
 				panic!("DRYFTERR - Misplaced function block ending");
 			}
@@ -149,7 +149,9 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 
 		/// actual code must start here, as to not be confused for function name
 
-		fun if cs.functions.contains_key(fun) => cs.add2body(&backend.user_function(fun)),
+		fun if cs.functions.contains_key(fun) => {
+			cs.add2body(&backend.user_function(fun));
+		}
 
 		num if regexint.is_match(num) => cs.add2body(&backend.push_integer(num)),
 
