@@ -51,6 +51,10 @@ impl Backend for C99Backend {
 		"puti(); "
 	}
 
+	fn act_print_string(&self) -> &'static str {
+		"putstr(); "
+	}
+
 	fn push_integer(&self, i: &str) -> String {
 		format!("psh({i}); ")
 	}

@@ -163,6 +163,7 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 		"^" => cs.add2body(backend.fun_copy()),
 		"v" => cs.add2body(backend.fun_drop()),
 		"puti" => cs.add2body(backend.act_print_integer()),
+		"puts" => cs.add2body(backend.act_print_string()),
 		
 		word => panic!("DRYFTERR - Unknown token '{}'", word),
 	}
