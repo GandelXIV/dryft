@@ -1,2 +1,6 @@
 # dryft
-*Dryft* is stack-based concatenative programming language, built as an experiment with features such as linear types, function purity distinction and much more.
+*Dryft* is an experimental stack-based concatenative programming language, featuring:
+- a very simple but extensible syntax
+- pure and impure function distinction 
+- Linear types and stack based resource management 
+- Full (optional) type inference
