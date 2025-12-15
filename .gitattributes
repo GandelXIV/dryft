@@ -1,1 +1,2 @@
 *.dry linguist-language=Forth
+*.sh linguist-language=Bash
