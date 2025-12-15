@@ -21,6 +21,8 @@ use std::env;
 use std::io;
 use std::io::Write;
 use std::fs;
+use clap::{Parser, ValueEnum};
+use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 use toml;
@@ -73,7 +75,7 @@ fn repl(targetspec: TargetSpec) {
     }
 }
 
-fn build_file(inp: &str, out: &str) {
+fn build_file(inp: &Path, out: &Path) {
     let src = &String::from_utf8(fs::read(inp).unwrap_or("".into())).unwrap();
     if src.is_empty() {
         println!("Nothing to compile :/");
@@ -119,22 +121,43 @@ struct TargetDesc {
 #[derive(Deserialize)]
 struct TargetSpec {
     dependencies: Vec<String>, // binaries used by the below
-    intermediate: String, // file to write dryftc output to
+    intermediate: PathBuf, // file to write dryftc output to
     externalize: String, // command describing how to use an external compiler to finalize compilation. 
     interpret: Option<String>, // command to run the final product
 }
 
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+pub struct Cli {
+    pub inputfile: Option<PathBuf>,
+
+    #[arg(short = 'b', long = "backend")]
+    #[arg(default_value = "cc" )]
+    pub target: String,
+
+    #[arg(long = "assembly-only")]
+    pub assembly_only: bool,
+
+    #[arg(short = 'a', long = "assembly-out")]
+    pub assembly_out: Option<PathBuf>,
+}
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let target_name = "c99"; // change this based on cli selection
+    let cli = Cli::parse();
+
+    let target_name = cli.target; 
     let target_raw = String::from_utf8(fs::read(&format!("src/targets/{target_name}.toml")).expect("Unknown target")).expect("Bad utf8 in target description");
     let target_toml: TargetDesc = toml::from_str(&target_raw).expect("Invalid target description");
     // TODO: add external dependency checks
-    let targetspec = target_toml.linux; // change this based on current platform
-    if args.len() > 1 {
-        build_file(&args[1], &targetspec.intermediate);
-        externalize(&targetspec.externalize).unwrap();
+    let mut targetspec = target_toml.linux; // change this based on current platform
+    if let Some(a) = cli.assembly_out {
+        targetspec.intermediate = a;
+    }
+    if let Some(f) = cli.inputfile {
+        build_file(&f, &targetspec.intermediate);
+        if !cli.assembly_only {
+            externalize(&targetspec.externalize).unwrap();
+        }
     } else {
         repl(targetspec);
     }

@@ -1,19 +1,19 @@
 /*
- * Copyright (C) 2025 Filip Chovanec
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2025 Filip Chovanec
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 use std::collections::HashMap;
 use regex::Regex;
@@ -71,14 +71,14 @@ impl CompileState {
 	}
 }
 
-pub fn compile<B: Backend>(mut backend: B, code: &str) -> CompileState {
+pub fn compile<B: Backend>(backend: &mut B, code: &str) -> CompileState {
 	let mut cs = CompileState::new();
 
 	macro_rules! new_token {
 	    () => {{
 	        if !cs.word.is_empty() {
 	        	cs.log_tokens.push(cs.word.clone());
-				handle_token(&mut backend, &mut cs);
+				handle_token(backend, &mut cs);
 				cs.word = String::new();
 	        }
 	    }};
@@ -113,8 +113,8 @@ pub fn compile<B: Backend>(mut backend: B, code: &str) -> CompileState {
 }
 
 pub fn compile_full<B: Backend>(mut backend: B, code: &str) -> String {
-	let built = compile(backend, code).out.expect("No code compiled :(");
-	B::complete( &built )
+	let built = compile(&mut backend, code).out.expect("No code compiled :(");
+	backend.complete( &built )
 }
 
 fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {

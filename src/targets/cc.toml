@@ -1,4 +1,5 @@
 [linux]
+backend = "C99"
 dependencies = [ "gcc" ]
 intermediate = ".temp.c"
 externalize = "gcc -O3 -w .temp.c"

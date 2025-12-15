@@ -15,42 +15,11 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-pub mod c99;
-pub mod nasm64;
+use crate::backends::Backend;
 
-pub trait Backend {
-	fn complete( &self, compiled: &str) -> String;
+pub struct Nasm64Backend {}
 
-	fn create_function(&self, fname: &str, body: String) -> String;
-	fn push_integer(&self, i: &str) -> String;
-	fn push_string(&self, s: &str) -> String;
-	fn user_function(&self, f: &str) -> String;
-
-	fn fun_add(&self) -> &'static str;
-	fn fun_sub(&self) -> &'static str;
-	fn fun_mul(&self) -> &'static str;
-	fn fun_div(&self) -> &'static str;
-	fn fun_mod(&self) -> &'static str;
-
-	fn fun_copy(&self) -> &'static str;
-	fn fun_drop(&self) -> &'static str;
-
-	fn act_print_integer(&self) -> &'static str;
-	fn act_print_string(&self) -> &'static str;
-
-}
-
-pub fn select(name: &str) -> Box<dyn Backend> {
-	match name {
-		"C99" => Box::new(c99::C99Backend {}),
-		"NASM64" => Box::new(nasm64::Nasm64Backend {}),
-		other => panic!("Invalid backend {other}"),
-	}
-}
-
-pub struct MockBackend {}
-
-impl Backend for MockBackend {
+impl Backend for Nasm64Backend {
 	fn complete(&self, compiled: &str) -> String {
 		compiled.to_string()
 	}
