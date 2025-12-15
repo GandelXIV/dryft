@@ -114,7 +114,8 @@ fn bash(cmd: &str) -> (String, String) {
 #[derive(Deserialize)]
 struct TargetDesc { 
     // only provides linux support for now, windows/mac support in the future
-    linux: TargetSpec
+    unix: Option<TargetSpec>,
+    windows: Option<TargetSpec>,
 }
 
 // platform independent
@@ -131,13 +132,16 @@ struct TargetSpec {
 pub struct Cli {
     pub inputfile: Option<PathBuf>,
 
-    #[arg(short = 'b', long = "backend")]
+    #[arg(short = 't', long = "target")]
     #[arg(default_value = "cc" )]
+    /// One of the targets defined in src/targets/
     pub target: String,
 
+    /// only outputs the final dryftc assembly, no external tooling will be called
     #[arg(long = "assembly-only")]
     pub assembly_only: bool,
 
+    /// output file where the dryftc assembly will be stored
     #[arg(short = 'a', long = "assembly-out")]
     pub assembly_out: Option<PathBuf>,
 }
@@ -148,11 +152,19 @@ fn main() {
     let target_name = cli.target; 
     let target_raw = String::from_utf8(fs::read(&format!("src/targets/{target_name}.toml")).expect("Unknown target")).expect("Bad utf8 in target description");
     let target_toml: TargetDesc = toml::from_str(&target_raw).expect("Invalid target description");
+    
     // TODO: add external dependency checks
-    let mut targetspec = target_toml.linux; // change this based on current platform
+
+    let mut targetspec = match env::consts::FAMILY {
+        "unix" => target_toml.unix.expect("Your platform (UNIX) does not yet support this target"),
+        "windows" => target_toml.windows.expect("Your platform (WINDOWS) does not yet support this target"),
+        other => panic!("Unknown host OS family {other}"),
+    };
+
     if let Some(a) = cli.assembly_out {
         targetspec.intermediate = a;
     }
+
     if let Some(f) = cli.inputfile {
         build_file(&f, &targetspec.intermediate);
         if !cli.assembly_only {

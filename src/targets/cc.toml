@@ -1,4 +1,4 @@
-[linux]
+[unix]
 backend = "C99"
 dependencies = [ "gcc" ]
 intermediate = ".temp.c"
