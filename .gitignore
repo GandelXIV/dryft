@@ -27,3 +27,6 @@ target
 .temp.c
 a.out
 proto/
+*.o
+build/*
+
