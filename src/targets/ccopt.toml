@@ -2,5 +2,5 @@
 backend = "C99"
 dependencies = [ "gcc" ]
 intermediate = ".temp.c"
-externalize = "gcc -w .temp.c"
+externalize = "gcc -w -O3 .temp.c"
 interpret = "./a.out"
