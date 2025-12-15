@@ -119,6 +119,6 @@ _start:
     lea rax, [rel stack]
     mov [sptr], rax
 
-    call fun_main
+    call fun_mainc
 
     linux_syscall SYSCALL_EXIT, EXIT_OK, 0, 0
