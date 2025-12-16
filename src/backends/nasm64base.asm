@@ -33,6 +33,11 @@ data_push:
     add qword [sptr], ITEM_SIZE
     ret
 
+%macro mpush 1
+    mov rdi, %1
+    call data_push
+%endmacro
+
 ; rax => output
 ; uses rax
 data_pop: 
@@ -47,10 +52,8 @@ data_pop:
 data_copy:
     call data_pop
     mov rbx, rax
-    mov rdi, rax
-    call data_push
-    mov rdi, rbx
-    call data_push
+    mpush rax
+    mpush rbx
     ret
 
 ; tested
@@ -59,8 +62,7 @@ builtin_add:
     mov rbx, rax
     call data_pop
     add rax, rbx
-    mov rdi, rax
-    call data_push
+    mpush rax
     ret
 
 ; tested
@@ -69,8 +71,7 @@ builtin_sub:
     mov rbx, rax
     call data_pop
     sub rax, rbx
-    mov rdi, rax
-    call data_push
+    mpush rax
     ret
 
 ; tested
@@ -79,9 +80,31 @@ builtin_mul:
     mov rbx, rax
     call data_pop
     imul rax, rbx
-    mov rdi, rax
-    call data_push
+    mpush rax
     ret
+
+; src: ChatGPT
+; tested
+builtin_div:
+    call data_pop
+    mov rbx, rax
+    call data_pop
+    cqo
+    idiv rbx
+    mpush rax
+    ret
+
+; src: ChatGPT
+; tested
+builtin_mod:
+    call data_pop
+    mov rbx, rax
+    call data_pop
+    cqo
+    idiv rbx
+    mpush rdx
+    ret
+
 
 SYSCALL_WRITE equ 1
 SYSCALL_EXIT equ 60
@@ -119,6 +142,6 @@ _start:
     lea rax, [rel stack]
     mov [sptr], rax
 
-    call fun_mainc
+    call fun_main
 
     linux_syscall SYSCALL_EXIT, EXIT_OK, 0, 0
