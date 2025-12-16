@@ -60,7 +60,7 @@ impl Backend for Nasm64Backend {
 	}
 
 	fn create_function(&self, fname: &str, body: String) -> String {
-		format!("fun_{fname}:\n{body}\n")
+		format!("fun_{fname}:\n{body}\tret\n\n")
 	}
 
 	fn user_function(&self, fname: &str) -> String {
