@@ -71,7 +71,7 @@ impl CompileState {
 	}
 }
 
-pub fn compile<B: Backend>(backend: &mut B, code: &str) -> CompileState {
+pub fn compile(backend: &mut Box<dyn Backend>, code: &str) -> CompileState {
 	let mut cs = CompileState::new();
 
 	macro_rules! new_token {
@@ -112,12 +112,12 @@ pub fn compile<B: Backend>(backend: &mut B, code: &str) -> CompileState {
 	return cs
 }
 
-pub fn compile_full<B: Backend>(mut backend: B, code: &str) -> String {
+pub fn compile_full(mut backend: Box<dyn Backend>, code: &str) -> String {
 	let built = compile(&mut backend, code).out.expect("No code compiled :(");
 	backend.complete( &built )
 }
 
-fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
+fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
     let regexint = Regex::new(r"^-?\d+$").unwrap();
 
 	macro_rules! new_definition {
@@ -183,8 +183,8 @@ fn handle_token<B: Backend>(backend: &mut B, cs: &mut CompileState) {
 		"*" => add_builtin!(fun_mul),
 		"/" => add_builtin!(fun_div),
 		"mod" => add_builtin!(fun_mod),
-		"^" => add_builtin!(fun_copy),
-		"v" => add_builtin!(fun_drop),
+		"^" | "copy" => add_builtin!(fun_copy),
+		"v" | "drop" => add_builtin!(fun_drop),
 		"puti" => add_builtin!(act_print_integer),
 		"puts" => add_builtin!(act_print_string),
 		

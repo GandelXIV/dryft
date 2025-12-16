@@ -145,3 +145,4 @@ _start:
     call fun_main
 
     linux_syscall SYSCALL_EXIT, EXIT_OK, 0, 0
+

@@ -63,7 +63,7 @@ fn repl(targetspec: TargetSpec) {
             }
             _ => {
                 let src = format!("fun: main {} ;", input);
-                let mut backend = DefaultBackend {};
+                let mut backend = crate::backends::select(&targetspec.backend);
                 fs::write(&targetspec.intermediate, frontend::compile_full(backend, &src)).unwrap();
                 if let Err(e) = externalize(&targetspec.externalize) {
                     println!("{}", e);
@@ -75,12 +75,12 @@ fn repl(targetspec: TargetSpec) {
     }
 }
 
-fn build_file(inp: &Path, out: &Path) {
+fn build_file(inp: &Path, out: &Path, backend_name: &str) {
     let src = &String::from_utf8(fs::read(inp).unwrap_or("".into())).unwrap();
     if src.is_empty() {
         println!("Nothing to compile :/");
     } else {
-        let mut backend = DefaultBackend {};
+        let mut backend = crate::backends::select(backend_name);
         fs::write(out, frontend::compile_full(backend, src)).unwrap();   
     }
 }
@@ -125,6 +125,7 @@ struct TargetSpec {
     intermediate: PathBuf, // file to write dryftc output to
     externalize: String, // command describing how to use an external compiler to finalize compilation. 
     interpret: Option<String>, // command to run the final product
+    backend: String,
 }
 
 #[derive(Parser, Debug)]
@@ -166,7 +167,7 @@ fn main() {
     }
 
     if let Some(f) = cli.inputfile {
-        build_file(&f, &targetspec.intermediate);
+        build_file(&f, &targetspec.intermediate, &targetspec.backend);
         if !cli.assembly_only {
             externalize(&targetspec.externalize).unwrap();
         }
