@@ -15,14 +15,13 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-use std::process::Command;
+use clap::{Parser, ValueEnum};
 use std::env;
+use std::fs;
 use std::io;
 use std::io::Write;
-use std::fs;
-use clap::{Parser, ValueEnum};
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 use serde::Deserialize;
 use toml;
@@ -36,7 +35,6 @@ use backends::Backend;
 type DefaultBackend = C99Backend;
 
 fn repl(targetspec: TargetSpec) {
-
     // temporary disable because of how stupidly the repl pastes code into main directly
     if targetspec.backend == "NASM64" {
         panic!("NASM64 unsupported for repl currently");
@@ -44,7 +42,7 @@ fn repl(targetspec: TargetSpec) {
 
     loop {
         print!("Dryft repl> ");
-        io::stdout().flush().unwrap();   // flush so it appears immediately
+        io::stdout().flush().unwrap(); // flush so it appears immediately
         let mut input = String::new();
         io::stdin()
             .read_line(&mut input)
@@ -55,7 +53,7 @@ fn repl(targetspec: TargetSpec) {
 
         match input.trim() {
             /*"#open" => {
-                let mut fname = String::new();  
+                let mut fname = String::new();
                 io::stdin()
                     .read_line(&mut fname)
                     .expect("Failed to read line");
@@ -65,20 +63,22 @@ fn repl(targetspec: TargetSpec) {
                 println!(".help/help  => display this screen");
                 println!(".exit/.quit => leave the REPL, terminating this process");
             }
-            ".exit" | ".quit" => {
-                break
-            }
+            ".exit" | ".quit" => break,
             _ => {
                 let src = format!("act: main {} ;", input);
                 let mut backend = crate::backends::select(&targetspec.backend);
-                fs::write(&targetspec.intermediate, frontend::compile_full(backend, &src)).unwrap();
+                fs::write(
+                    &targetspec.intermediate,
+                    frontend::compile_full(backend, &src),
+                )
+                .unwrap();
                 if let Err(e) = assemble(&targetspec.assemble) {
                     println!("{}", e);
                 } else {
                     if let Err(e) = link(&targetspec.link) {
                         println!("{}", e);
                     } else {
-                        interpret(targetspec.interpret.clone().unwrap().as_ref()); 
+                        interpret(targetspec.interpret.clone().unwrap().as_ref());
                     }
                 }
             }
@@ -92,7 +92,7 @@ fn build_file(inp: &Path, out: &Path, backend_name: &str) {
         println!("Nothing to compile :/");
     } else {
         let mut backend = crate::backends::select(backend_name);
-        fs::write(out, frontend::compile_full(backend, src)).unwrap();   
+        fs::write(out, frontend::compile_full(backend, src)).unwrap();
     }
 }
 
@@ -100,24 +100,24 @@ fn build_file(inp: &Path, out: &Path, backend_name: &str) {
 fn assemble(cmd: &str) -> Result<(), String> {
     let (_, stderr) = bash(cmd);
     if !stderr.is_empty() {
-        return Err(stderr)
+        return Err(stderr);
     }
-    return Ok(())
+    return Ok(());
 }
 
 fn link(cmd: &str) -> Result<(), String> {
     let (_, stderr) = bash(cmd);
     if !stderr.is_empty() {
-        return Err(stderr)
+        return Err(stderr);
     }
-    return Ok(())
+    return Ok(());
 }
 
 // execute step after externalize(), necessary for VM-based backends
 // TODO: currently waits for finish to disply stdout, which is not good for interactive apps. Start a proper process in future.
 fn interpret(cmd: &str) {
     let (stdout, _) = bash("./a.out");
-    println!("{}", stdout);  
+    println!("{}", stdout);
 }
 
 // returns stdout and stderr post cmd execution
@@ -127,11 +127,14 @@ fn bash(cmd: &str) -> (String, String) {
         .arg(cmd)
         .output()
         .expect("Failed to execute bash");
-    (String::from_utf8_lossy(&output.stdout).to_string(), String::from_utf8_lossy(&output.stderr).to_string())
+    (
+        String::from_utf8_lossy(&output.stdout).to_string(),
+        String::from_utf8_lossy(&output.stderr).to_string(),
+    )
 }
 
 #[derive(Deserialize)]
-struct TargetDesc { 
+struct TargetDesc {
     // only provides linux support for now, windows/mac support in the future
     unix: Option<TargetSpec>,
     windows: Option<TargetSpec>,
@@ -141,13 +144,13 @@ struct TargetDesc {
 #[derive(Deserialize)]
 struct TargetSpec {
     dependencies: Vec<String>, // binaries used by the below
-    intermediate: PathBuf, // file to write dryftc output to
-    assemble: String, // command describing how to use an external compiler to finalize compilation. 
+    intermediate: PathBuf,     // file to write dryftc output to
+    assemble: String, // command describing how to use an external compiler to finalize compilation.
     link: String,
     interpret: Option<String>, // command to run the final product. If none, use default system execute function (TODO)
     linkstep: Option<String>,
     backend: String,
-}   
+}
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -155,7 +158,7 @@ pub struct Cli {
     pub inputfile: Option<PathBuf>,
 
     #[arg(short = 't', long = "target")]
-    #[arg(default_value = "cc" )]
+    #[arg(default_value = "cc")]
     /// One of the targets defined in src/targets/
     pub target: String,
 
@@ -179,17 +182,26 @@ pub struct Cli {
 fn main() {
     let cli = Cli::parse();
 
-    let target_name = cli.target; 
+    let target_name = cli.target;
     let target_raw = String::from_utf8(
-        fs::read(&cli.custom_target.unwrap_or(format!("src/targets/{target_name}.toml"))).expect("Unknown target")
-    ).expect("Bad utf8 in target description");
+        fs::read(
+            &cli.custom_target
+                .unwrap_or(format!("src/targets/{target_name}.toml")),
+        )
+        .expect("Unknown target"),
+    )
+    .expect("Bad utf8 in target description");
     let target_toml: TargetDesc = toml::from_str(&target_raw).expect("Invalid target description");
-    
+
     // TODO: add external dependency checks
 
     let mut targetspec = match env::consts::FAMILY {
-        "unix" => target_toml.unix.expect("Your platform (UNIX) does not yet support this target"),
-        "windows" => target_toml.windows.expect("Your platform (WINDOWS) does not yet support this target"),
+        "unix" => target_toml
+            .unix
+            .expect("Your platform (UNIX) does not yet support this target"),
+        "windows" => target_toml
+            .windows
+            .expect("Your platform (WINDOWS) does not yet support this target"),
         other => panic!("Unknown host OS family {other}"),
     };
 
@@ -202,7 +214,7 @@ fn main() {
         if !cli.assembly_only {
             assemble(&targetspec.assemble).unwrap();
             if !cli.object_only {
-                link(&targetspec.link).unwrap();             
+                link(&targetspec.link).unwrap();
             }
         }
     } else {

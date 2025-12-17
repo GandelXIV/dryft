@@ -19,96 +19,95 @@ pub mod c99;
 pub mod nasm64;
 
 pub trait Backend {
-	fn complete( &self, compiled: &str) -> String;
+    fn complete(&self, compiled: &str) -> String;
 
-	fn create_function(&self, fname: &str, body: String) -> String;
-	fn push_integer(&self, i: &str) -> String;
-	fn push_string(&self, s: &str) -> String;
-	fn user_function(&self, f: &str) -> String; // CALL a user defined function 
-	fn linkin_function(&self, name: &str) -> String;
+    fn create_function(&self, fname: &str, body: String) -> String;
+    fn push_integer(&self, i: &str) -> String;
+    fn push_string(&self, s: &str) -> String;
+    fn user_function(&self, f: &str) -> String; // CALL a user defined function
+    fn linkin_function(&self, name: &str) -> String;
 
-	fn fun_add(&self) -> &'static str;
-	fn fun_sub(&self) -> &'static str;
-	fn fun_mul(&self) -> &'static str;
-	fn fun_div(&self) -> &'static str;
-	fn fun_mod(&self) -> &'static str;
+    fn fun_add(&self) -> &'static str;
+    fn fun_sub(&self) -> &'static str;
+    fn fun_mul(&self) -> &'static str;
+    fn fun_div(&self) -> &'static str;
+    fn fun_mod(&self) -> &'static str;
 
-	fn fun_copy(&self) -> &'static str;
-	fn fun_drop(&self) -> &'static str;
+    fn fun_copy(&self) -> &'static str;
+    fn fun_drop(&self) -> &'static str;
 
-	fn act_print_integer(&self) -> &'static str;
-	fn act_print_string(&self) -> &'static str;
-
+    fn act_print_integer(&self) -> &'static str;
+    fn act_print_string(&self) -> &'static str;
 }
 
 pub fn select(name: &str) -> Box<dyn Backend> {
-	match name {
-		"C99" => Box::new(c99::C99Backend {}),
-		"NASM64" => Box::new(nasm64::Nasm64Backend {}),
-		other => panic!("Invalid backend {other}"),
-	}
+    match name {
+        "C99" => Box::new(c99::C99Backend {}),
+        "NASM64" => Box::new(nasm64::Nasm64Backend {}),
+        other => panic!("Invalid backend {other}"),
+    }
 }
 
 pub struct MockBackend {}
 
 impl Backend for MockBackend {
-	fn linkin_function(&self, name: &str) -> String {
-		"".to_string()
-	}
+    fn linkin_function(&self, name: &str) -> String {
+        "".to_string()
+    }
 
-	fn complete(&self, compiled: &str) -> String {
-		compiled.to_string()
-	}
+    fn complete(&self, compiled: &str) -> String {
+        compiled.to_string()
+    }
 
-	fn fun_add(&self) -> &'static str {
-		""
-	}
+    fn fun_add(&self) -> &'static str {
+        ""
+    }
 
-	fn fun_sub(&self) -> &'static str {
-		""
-	}
+    fn fun_sub(&self) -> &'static str {
+        ""
+    }
 
-	fn fun_mul(&self) -> &'static str {
-		""
-	}
+    fn fun_mul(&self) -> &'static str {
+        ""
+    }
 
-	fn fun_div(&self) -> &'static str {
-		""
-	}
+    fn fun_div(&self) -> &'static str {
+        ""
+    }
 
-	fn fun_mod(&self) -> &'static str {
-		""
-	}
+    fn fun_mod(&self) -> &'static str {
+        ""
+    }
 
-	fn fun_copy(&self) -> &'static str {
-		""
-	}
+    fn fun_copy(&self) -> &'static str {
+        ""
+    }
 
-	fn fun_drop(&self) -> &'static str {
-		""
-	}
+    fn fun_drop(&self) -> &'static str {
+        ""
+    }
 
-	fn act_print_integer(&self) -> &'static str {
-		""
-	}
+    fn act_print_integer(&self) -> &'static str {
+        ""
+    }
 
-	fn create_function(&self, fname: &str, body: String) -> String {
-		"".to_string()
-	}
+    fn create_function(&self, fname: &str, body: String) -> String {
+        "".to_string()
+    }
 
-	fn user_function(&self, fname: &str) -> String {
-		"".to_string()
-	}
+    fn user_function(&self, fname: &str) -> String {
+        "".to_string()
+    }
 
-	fn push_integer(&self, i: &str) -> String {
-		"".to_string()	
-	}
+    fn push_integer(&self, i: &str) -> String {
+        "".to_string()
+    }
 
-	fn act_print_string(&self) -> &'static str { 
-		"" 
-	}
+    fn act_print_string(&self) -> &'static str {
+        ""
+    }
 
-	fn push_string(&self, s: &str) -> String {
-		"".to_string()
-	}
+    fn push_string(&self, s: &str) -> String {
+        "".to_string()
+    }
 }

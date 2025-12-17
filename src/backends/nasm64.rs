@@ -20,66 +20,66 @@ use crate::backends::Backend;
 pub struct Nasm64Backend {}
 
 impl Backend for Nasm64Backend {
-	fn complete(&self, compiled: &str) -> String {
-		let mut base = include_str!("nasm64base.asm").to_string();
-		base.push_str(compiled);
-		base	
-	}
+    fn complete(&self, compiled: &str) -> String {
+        let mut base = include_str!("nasm64base.asm").to_string();
+        base.push_str(compiled);
+        base
+    }
 
-	fn linkin_function(&self, name: &str) -> String {
-		todo!()
-	}
+    fn linkin_function(&self, name: &str) -> String {
+        todo!()
+    }
 
-	fn fun_add(&self) -> &'static str {
-		"\tcall builtin_add\n"
-	}
+    fn fun_add(&self) -> &'static str {
+        "\tcall builtin_add\n"
+    }
 
-	fn fun_sub(&self) -> &'static str {
-		"\tcall builtin_sub\n"	
-	}
+    fn fun_sub(&self) -> &'static str {
+        "\tcall builtin_sub\n"
+    }
 
-	fn fun_mul(&self) -> &'static str {
-		"\tcall builtin_mul\n"
-	}
+    fn fun_mul(&self) -> &'static str {
+        "\tcall builtin_mul\n"
+    }
 
-	fn fun_div(&self) -> &'static str {
-		"\tcall builtin_div\n"
-	}
+    fn fun_div(&self) -> &'static str {
+        "\tcall builtin_div\n"
+    }
 
-	fn fun_mod(&self) -> &'static str {
-		"\tcall builtin_mod\n"
-	}
+    fn fun_mod(&self) -> &'static str {
+        "\tcall builtin_mod\n"
+    }
 
-	fn fun_copy(&self) -> &'static str {
-		"\tcall data_copy\n"
-	}
+    fn fun_copy(&self) -> &'static str {
+        "\tcall data_copy\n"
+    }
 
-	fn fun_drop(&self) -> &'static str {
-		"\tcall data_pop\n"
-	}
+    fn fun_drop(&self) -> &'static str {
+        "\tcall data_pop\n"
+    }
 
-	fn act_print_integer(&self) -> &'static str {
-		// TODO: implement this multi-digit numbers
-		"\tcall builtin_print_digit\n"
-	}
+    fn act_print_integer(&self) -> &'static str {
+        // TODO: implement this multi-digit numbers
+        "\tcall builtin_print_digit\n"
+    }
 
-	fn create_function(&self, fname: &str, body: String) -> String {
-		format!("fun_{fname}:\n{body}\tret\n\n")
-	}
+    fn create_function(&self, fname: &str, body: String) -> String {
+        format!("fun_{fname}:\n{body}\tret\n\n")
+    }
 
-	fn user_function(&self, fname: &str) -> String {
-		format!("\tcall fun_{fname}\n")
-	}
+    fn user_function(&self, fname: &str) -> String {
+        format!("\tcall fun_{fname}\n")
+    }
 
-	fn push_integer(&self, i: &str) -> String {
-		format!("\tmpush {i}\n")	
-	}
+    fn push_integer(&self, i: &str) -> String {
+        format!("\tmpush {i}\n")
+    }
 
-	fn act_print_string(&self) -> &'static str { 
-		todo!()
-	}
+    fn act_print_string(&self) -> &'static str {
+        todo!()
+    }
 
-	fn push_string(&self, s: &str) -> String {
-		todo!()
-	}
+    fn push_string(&self, s: &str) -> String {
+        todo!()
+    }
 }

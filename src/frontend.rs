@@ -15,178 +15,182 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-use std::collections::HashMap;
-use regex::Regex;
+use crate::backends::c99::C99Backend;
 use crate::backends::Backend;
 use crate::backends::MockBackend;
-use crate::backends::c99::C99Backend;
-use strum_macros::{IntoStaticStr};
-
+use regex::Regex;
+use std::collections::HashMap;
+use strum_macros::IntoStaticStr;
 
 #[derive(Debug, PartialEq, IntoStaticStr)]
 enum DefinitionTypes {
-	Function,
-	Action,
-	Linkin,
-	Negative, // purely comparative for compiler purposes
+    Function,
+    Action,
+    Linkin,
+    Negative, // purely comparative for compiler purposes
 
-	Loop,
-	Conditional,
+    Loop,
+    Conditional,
 }
 
 pub struct CompileState {
-	pub out: Option<String>, // access after compile() has been called
-	pub log_tokens: Vec<String>, // purely for debugging usecases
+    pub out: Option<String>,     // access after compile() has been called
+    pub log_tokens: Vec<String>, // purely for debugging usecases
 
-	pub functions: HashMap<String, String>,
-	pub actions: HashMap<String, String>,
+    pub functions: HashMap<String, String>,
+    pub actions: HashMap<String, String>,
 
-	pub word: String,
+    pub word: String,
 
-	pub defnstack: Vec<DefinitionTypes>,
-	pub metastack: Vec<Vec<String>>,
-	pub bodystack: Vec<String>,
+    pub defnstack: Vec<DefinitionTypes>,
+    pub metastack: Vec<Vec<String>>,
+    pub bodystack: Vec<String>,
 
-	pub iscomment: bool,
-	pub isstring: bool,
-	pub newstring: String,
+    pub iscomment: bool,
+    pub isstring: bool,
+    pub newstring: String,
 }
 
-
 impl CompileState {
-	fn new() -> Self {
-		Self {
-			out: None,
-			log_tokens: vec![],
-			word: String::new(),
-			functions: HashMap::new(),
-			actions: HashMap::new(),
-			defnstack: vec![],
-			metastack: vec![],
-			bodystack: vec![String::new()],
-			iscomment: false,
-			isstring: false,
-			newstring: String::new(),
-		}
-	}
+    fn new() -> Self {
+        Self {
+            out: None,
+            log_tokens: vec![],
+            word: String::new(),
+            functions: HashMap::new(),
+            actions: HashMap::new(),
+            defnstack: vec![],
+            metastack: vec![],
+            bodystack: vec![String::new()],
+            iscomment: false,
+            isstring: false,
+            newstring: String::new(),
+        }
+    }
 
-	fn add2body(&mut self, s: &str) {
-		self.bodystack.last_mut().unwrap().push_str(s)
-	}
+    fn add2body(&mut self, s: &str) {
+        self.bodystack.last_mut().unwrap().push_str(s)
+    }
 
-	fn before_action(&self) {
-		if self.defnstack.contains(&DefinitionTypes::Function) {
-			panic!("DRYFTERR - Can not call actions from inside a function");
-		}
-	}
+    fn before_action(&self) {
+        if self.defnstack.contains(&DefinitionTypes::Function) {
+            panic!("DRYFTERR - Can not call actions from inside a function");
+        }
+    }
 }
 
 pub fn compile(backend: &mut Box<dyn Backend>, code: &str) -> CompileState {
-	let mut cs = CompileState::new();
+    let mut cs = CompileState::new();
 
-	macro_rules! new_token {
-	    () => {{
-	        if !cs.word.is_empty() {
-	        	cs.log_tokens.push(cs.word.clone());
-				handle_token(backend, &mut cs);
-				cs.word = String::new();
-	        }
-	    }};
-	}
+    macro_rules! new_token {
+        () => {{
+            if !cs.word.is_empty() {
+                cs.log_tokens.push(cs.word.clone());
+                handle_token(backend, &mut cs);
+                cs.word = String::new();
+            }
+        }};
+    }
 
-	for letter in code.chars() {
-		match letter {
-			c if cs.iscomment => {
-				if c == '#' {
-					cs.iscomment = false;
-				}
-			}
-			c if cs.isstring => {
-				if c == '"' {
-					cs.isstring = false;
-					cs.add2body(&backend.push_string(&cs.newstring));
-					cs.newstring = String::new();
-				} else {
-					cs.newstring.push(c);
-				}
-			}
-			' ' | '\n' | '\t' => new_token!(),
-			'#' => cs.iscomment = true,
-			'"' => cs.isstring = true,
-			other => cs.word.push(other),
-		}
-	}
-	new_token!(); // last word may not be whitespace separated
-	cs.out = Some(cs.bodystack.remove(0));
+    for letter in code.chars() {
+        match letter {
+            c if cs.iscomment => {
+                if c == '#' {
+                    cs.iscomment = false;
+                }
+            }
+            c if cs.isstring => {
+                if c == '"' {
+                    cs.isstring = false;
+                    cs.add2body(&backend.push_string(&cs.newstring));
+                    cs.newstring = String::new();
+                } else {
+                    cs.newstring.push(c);
+                }
+            }
+            ' ' | '\n' | '\t' => new_token!(),
+            '#' => cs.iscomment = true,
+            '"' => cs.isstring = true,
+            other => cs.word.push(other),
+        }
+    }
+    new_token!(); // last word may not be whitespace separated
+    cs.out = Some(cs.bodystack.remove(0));
 
-	return cs
+    return cs;
 }
 
 pub fn compile_full(mut backend: Box<dyn Backend>, code: &str) -> String {
-	let built = compile(&mut backend, code).out.expect("No code compiled :(");
-	backend.complete( &built )
+    let built = compile(&mut backend, code)
+        .out
+        .expect("No code compiled :(");
+    backend.complete(&built)
 }
 
 fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
     let regexint = Regex::new(r"^-?\d+$").unwrap();
 
     // this should actually only be used for defintions that need their own body and meta stack :C, allocating a new body is unnecessary otherwise
-	macro_rules! new_definition {
-	    ($variant:ident) => {{
-	        cs.defnstack.push(DefinitionTypes::$variant);
-			cs.metastack.push(vec![]);
-			cs.bodystack.push(String::new());
-	    }};
-	}
+    macro_rules! new_definition {
+        ($variant:ident) => {{
+            cs.defnstack.push(DefinitionTypes::$variant);
+            cs.metastack.push(vec![]);
+            cs.bodystack.push(String::new());
+        }};
+    }
 
-	macro_rules! add_function {
-		() => {
-			let meta = cs.metastack.pop().unwrap();
-			let body = cs.bodystack.pop().unwrap();
+    macro_rules! add_function {
+        () => {
+            let meta = cs.metastack.pop().unwrap();
+            let body = cs.bodystack.pop().unwrap();
 
-			let fname = meta.get(0).expect("DRYFTERR - No function name provided");
+            let fname = meta.get(0).expect("DRYFTERR - No function name provided");
 
-			if fname == "main" {
-				panic!("DRYFTERR - main must be defined as an action");
-			}
+            if fname == "main" {
+                panic!("DRYFTERR - main must be defined as an action");
+            }
 
-			cs.functions.insert(fname.clone(), body.clone());
+            cs.functions.insert(fname.clone(), body.clone());
 
-			let f = backend.create_function(fname.as_ref(), body);
-			cs.add2body(&f);
-		}
-	}
+            let f = backend.create_function(fname.as_ref(), body);
+            cs.add2body(&f);
+        };
+    }
 
-	macro_rules! add_action {
-		() => {
-			let meta = cs.metastack.pop().unwrap();
-			let body = cs.bodystack.pop().unwrap();
+    macro_rules! add_action {
+        () => {
+            let meta = cs.metastack.pop().unwrap();
+            let body = cs.bodystack.pop().unwrap();
 
-			let aname = meta.get(0).expect("DRYFTERR - No function name provided");
+            let aname = meta.get(0).expect("DRYFTERR - No function name provided");
 
-			cs.actions.insert(aname.clone(), body.clone());
+            cs.actions.insert(aname.clone(), body.clone());
 
-			let f = backend.create_function(aname.as_ref(), body);
-			cs.add2body(&f);
-		}
-	}
+            let f = backend.create_function(aname.as_ref(), body);
+            cs.add2body(&f);
+        };
+    }
 
+    macro_rules! add_builtin {
+        ($prop:ident) => {{
+            cs.add2body(backend.$prop())
+        }};
+    }
 
-	macro_rules! add_builtin {
-		($prop:ident) => {{
-			cs.add2body(backend.$prop())
-		}}
-	}
+    macro_rules! check_terminator {
+        ($expected:ident) => {
+            if cs.defnstack.pop().expect("DRYFTERR - no block to end") != DefinitionTypes::$expected
+            {
+                panic!(concat!(
+                    "DRYFTERR - Misplaced ",
+                    stringify!($expected),
+                    " block ending"
+                ));
+            }
+        };
+    }
 
-	macro_rules! check_terminator {
-    	($expected:ident) => {
-        	if cs.defnstack.pop().expect("DRYFTERR - no block to end") != DefinitionTypes::$expected {
-            	panic!(concat!("DRYFTERR - Misplaced ", stringify!($expected), " block ending"));
-        	}
-    	};
-	}
-
-	match cs.word.as_ref() {
+    match cs.word.as_ref() {
 
 		// needs higher priority than fun & act keywords
 		x if *cs.defnstack.last().unwrap_or(&DefinitionTypes::Negative) == DefinitionTypes::Linkin && cs.metastack.last().unwrap().len() < 2 => {
@@ -280,41 +284,47 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 }
 
 fn make_strings(v: Vec<&str>) -> Vec<String> {
-	v.into_iter().map(String::from).collect()
+    v.into_iter().map(String::from).collect()
 }
 
 #[cfg(test)]
 mod tests {
-	use super::*;
+    use super::*;
 
-	#[test]
-	fn simple_parse() {
-		let mut backend = MockBackend {};
-		let mut cs = compile(backend, "fun: inc\n\t1 + ;fun");
-		assert_eq!(cs.log_tokens, make_strings(vec!["fun:", "inc", "1", "+", ";fun"]));
-		//assert_eq!(cs.defstack, vec![(DefinitionTypes::Function, make_strings(vec!["inc", "1", "+", ";"]))]);
-	}
+    #[test]
+    fn simple_parse() {
+        let mut backend : Box<dyn Backend> = Box::new(MockBackend {});
+        let mut cs = compile(&mut backend, "fun: inc\n\t1 + ;fun");
+        assert_eq!(
+            cs.log_tokens,
+            make_strings(vec!["fun:", "inc", "1", "+", ";fun"])
+        );
+        //assert_eq!(cs.defstack, vec![(DefinitionTypes::Function, make_strings(vec!["inc", "1", "+", ";"]))]);
+    }
 
-	#[test]
-	fn semicolon_ending() {
-		let mut backend = MockBackend {};
-		let mut cs = compile(backend, "fun: id ;");
-		let mut backend = MockBackend {};
-		let mut cs2 = compile(backend, "fun: id ;fun");
-		assert_eq!(cs.out, cs2.out);
-	}
+    #[test]
+    fn semicolon_ending() {
+        let mut backend : Box<dyn Backend> = Box::new(MockBackend {});
+        let mut cs = compile(&mut backend, "fun: id ;");
+        let mut backend : Box<dyn Backend> = Box::new(MockBackend {});
+        let mut cs2 = compile(&mut backend, "fun: id ;fun");
+        assert_eq!(cs.out, cs2.out);
+    }
 
-	#[test]
-	fn function_compilation() {
-		let mut backend = C99Backend {};
-		let mut cs = compile(backend, "fun: sum3 + + ;fun");
+    #[test]
+    fn function_compilation() {
+        let mut backend : Box<dyn Backend> = Box::new(C99Backend {});
+        let mut cs = compile(&mut backend, "fun: sum3 + + ;fun");
 
-		assert_eq!( cs.out.unwrap(), "void fun_sum3() { add(); add(); }\n".to_string() );
-	}
+        assert_eq!(
+            cs.out.unwrap(),
+            "void fun_sum3() { add(); add(); }\n".to_string()
+        );
+    }
 
-	#[test]
-	fn strings() {
-		let mut backend = C99Backend {};
-		let mut cs = compile(backend, "fun idk \" # fake comment # \" ; ");
-	}
+    #[test]
+    fn strings() {
+        let mut backend : Box<dyn Backend> = Box::new(C99Backend {});
+        let mut cs = compile(&mut backend, "fun idk \" # fake comment # \" ; ");
+    }
 }
