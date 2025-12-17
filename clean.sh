@@ -1,3 +1,6 @@
 #!/bin/bash
 
-rm -f a.out .temp.c
+set -x
+
+rm -f a.out build/*
+touch build/.gitkeep

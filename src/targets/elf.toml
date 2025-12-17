@@ -2,5 +2,6 @@
 backend = "NASM64"
 dependencies = [ "nasm", "ld" ]
 intermediate = "build/ir.asm"
-externalize = "nasm -f elf64 -o build/obj.o build/ir.asm && ld build/obj.o -o a.out"
+assemble = "nasm -f elf64 -o build/obj.o build/ir.asm"
+link = "ld build/obj.o -o a.out"
 interpret = "./a.out"
