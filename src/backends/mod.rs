@@ -24,7 +24,8 @@ pub trait Backend {
 	fn create_function(&self, fname: &str, body: String) -> String;
 	fn push_integer(&self, i: &str) -> String;
 	fn push_string(&self, s: &str) -> String;
-	fn user_function(&self, f: &str) -> String;
+	fn user_function(&self, f: &str) -> String; // CALL a user defined function 
+	fn linkin_function(&self, name: &str) -> String;
 
 	fn fun_add(&self) -> &'static str;
 	fn fun_sub(&self) -> &'static str;
@@ -51,6 +52,10 @@ pub fn select(name: &str) -> Box<dyn Backend> {
 pub struct MockBackend {}
 
 impl Backend for MockBackend {
+	fn linkin_function(&self, name: &str) -> String {
+		"".to_string()
+	}
+
 	fn complete(&self, compiled: &str) -> String {
 		compiled.to_string()
 	}

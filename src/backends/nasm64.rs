@@ -26,6 +26,10 @@ impl Backend for Nasm64Backend {
 		base	
 	}
 
+	fn linkin_function(&self, name: &str) -> String {
+		todo!()
+	}
+
 	fn fun_add(&self) -> &'static str {
 		"\tcall builtin_add\n"
 	}

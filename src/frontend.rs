@@ -27,6 +27,9 @@ use strum_macros::{IntoStaticStr};
 enum DefinitionTypes {
 	Function,
 	Action,
+	Linkin,
+	Negative, // purely comparative for compiler purposes
+
 	Loop,
 	Conditional,
 }
@@ -127,6 +130,7 @@ pub fn compile_full(mut backend: Box<dyn Backend>, code: &str) -> String {
 fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
     let regexint = Regex::new(r"^-?\d+$").unwrap();
 
+    // this should actually only be used for defintions that need their own body and meta stack :C, allocating a new body is unnecessary otherwise
 	macro_rules! new_definition {
 	    ($variant:ident) => {{
 	        cs.defnstack.push(DefinitionTypes::$variant);
@@ -183,6 +187,28 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 	}
 
 	match cs.word.as_ref() {
+
+		// needs higher priority than fun & act keywords
+		x if *cs.defnstack.last().unwrap_or(&DefinitionTypes::Negative) == DefinitionTypes::Linkin && cs.metastack.last().unwrap().len() < 2 => {
+			cs.metastack.last_mut().unwrap().push(x.into());
+			// if we have all the arguments we needed				
+			if cs.metastack.last_mut().unwrap().len() == 2 {
+				let mut meta = cs.metastack.pop().unwrap();
+				cs.defnstack.pop(); // end our defintion
+
+				let class = meta.remove(0);
+				let mname = meta.remove(0);
+
+				match class.as_ref() {
+					"fun" => cs.functions.insert(mname.clone(), "LINKED IN".to_string()),
+					"act" => cs.actions.insert(mname.clone(), "LINKED IN".to_string()),
+					other => panic!("DRYFTERR - Invalid link-in class {other}")
+				};
+				
+				cs.add2body(&backend.linkin_function(&mname));
+			}
+		}
+
 		"fun:" | "fun" => new_definition!(Function),
 
 		";fun" | "endfun" | ":fun" => {
@@ -199,6 +225,12 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 			add_action!();
 		}
 
+		// this keyword is funamentally unsafe, consider adding changing to unsafe_linkin or something like that
+		"linkin" /* TODO: make a 'park' joke with this ;P */ => {
+			cs.defnstack.push(DefinitionTypes::Linkin);
+			cs.metastack.push(vec![]);
+		}
+
 		";" | "end" => {
 			match cs.defnstack.pop().expect("DRYFTERR - Misplaced ;") {
 				// keep {} notation instead of , for the macros to work
@@ -210,13 +242,17 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
 		mac if (false) => {} // future for macro expansion
 
+		// TODO: optimize this into an argcount stack, which decrements top on each metastack push
+		// TODO ALT basically all of these just grab x args, but maybe in the future they will also perform immediate work with them, so who knows actually?
+		// TODO ALT just break this into a bunch of macro for ease of use & reading
+
 		fname if *cs.defnstack.last().unwrap() == DefinitionTypes::Function && cs.metastack.last().unwrap().is_empty() => 
 			cs.metastack.last_mut().unwrap().push(fname.into()),
 
 		aname if *cs.defnstack.last().unwrap() == DefinitionTypes::Action && cs.metastack.last().unwrap().is_empty() => 
 			cs.metastack.last_mut().unwrap().push(aname.into()),
 
-		// actual code must start here, as to not be confused for function name
+		// body code must start here, as to not be confused for meta code
 
 		fun if cs.functions.contains_key(fun) => {
 			cs.add2body(&backend.user_function(fun));

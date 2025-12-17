@@ -2,11 +2,16 @@
 
 fun inc 1 + ;
 
-fun: double ^ + ;
+fun: double copy + ;
 
 fun: quadra 
 	double double 
 :fun
+
+# you can link-in external functions #
+# note that using the FFI in this way is potentially unsafe #
+
+linkin fun park
 
 act main
 	# unambigious versions of 6/2(1+2) #

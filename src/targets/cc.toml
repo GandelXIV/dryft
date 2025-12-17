@@ -3,5 +3,5 @@ backend = "C99"
 dependencies = [ "gcc" ]
 intermediate = "build/temp.c"
 assemble = "gcc -c -o build/temp.o -w build/temp.c"
-link = "gcc build/temp.o -o a.out"
+link = "gcc build/temp.o build/foo.o -o a.out"
 interpret = "./a.out"

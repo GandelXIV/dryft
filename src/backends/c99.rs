@@ -26,8 +26,12 @@ impl Backend for C99Backend {
 		cbase
 	}
 
-	/// TODO: hash function names to avoid clashes with internals and allow symbol only names
+	fn linkin_function(&self, name: &str) -> String {
+		// because we prepend all user functions with fun_ , we have to get to the linked function indirectly
+		format!("extern void {name}();\nvoid fun_{name}(){{ {name}(); }}\n")
+	}
 
+	// TODO: hash function names to avoid clashes with internals and allow symbol only names
 	fn create_function(&self, fname: &str, body: String) -> String {
 		format!("void fun_{}() {{ {}}}\n", fname, body)
 	}
