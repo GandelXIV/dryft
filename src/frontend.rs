@@ -20,9 +20,10 @@ use regex::Regex;
 use crate::backends::Backend;
 use crate::backends::MockBackend;
 use crate::backends::c99::C99Backend;
+use strum_macros::{IntoStaticStr};
 
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, IntoStaticStr)]
 enum DefinitionTypes {
 	Function,
 	Action,
@@ -68,6 +69,12 @@ impl CompileState {
 
 	fn add2body(&mut self, s: &str) {
 		self.bodystack.last_mut().unwrap().push_str(s)
+	}
+
+	fn before_action(&self) {
+		if self.defnstack.contains(&DefinitionTypes::Function) {
+			panic!("DRYFTERR - Can not call actions from inside a function");
+		}
 	}
 }
 
@@ -135,6 +142,10 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
 			let fname = meta.get(0).expect("DRYFTERR - No function name provided");
 
+			if fname == "main" {
+				panic!("DRYFTERR - main must be defined as an action");
+			}
+
 			cs.functions.insert(fname.clone(), body.clone());
 
 			let f = backend.create_function(fname.as_ref(), body);
@@ -142,25 +153,57 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 		}
 	}
 
+	macro_rules! add_action {
+		() => {
+			let meta = cs.metastack.pop().unwrap();
+			let body = cs.bodystack.pop().unwrap();
+
+			let aname = meta.get(0).expect("DRYFTERR - No function name provided");
+
+			cs.actions.insert(aname.clone(), body.clone());
+
+			let f = backend.create_function(aname.as_ref(), body);
+			cs.add2body(&f);
+		}
+	}
+
+
 	macro_rules! add_builtin {
 		($prop:ident) => {{
 			cs.add2body(backend.$prop())
 		}}
 	}
 
+	macro_rules! check_terminator {
+    	($expected:ident) => {
+        	if cs.defnstack.pop().expect("DRYFTERR - no block to end") != DefinitionTypes::$expected {
+            	panic!(concat!("DRYFTERR - Misplaced ", stringify!($expected), " block ending"));
+        	}
+    	};
+	}
+
 	match cs.word.as_ref() {
 		"fun:" | "fun" => new_definition!(Function),
 
 		";fun" | "endfun" | ":fun" => {
-			if cs.defnstack.pop().unwrap() != DefinitionTypes::Function {
-				panic!("DRYFTERR - Misplaced function block ending");
-			}
+			check_terminator!(Function);
 			add_function!();
+		}
+
+		"act:" | "act" => {
+			new_definition!(Action); 
+		}
+
+		":act" => {
+			check_terminator!(Action);
+			add_action!();
 		}
 
 		";" | "end" => {
 			match cs.defnstack.pop().expect("DRYFTERR - Misplaced ;") {
+				// keep {} notation instead of , for the macros to work
 				DefinitionTypes::Function => { add_function!(); }
+				DefinitionTypes::Action => { add_action!(); }
 				_ => todo!(),
 			}
 		}
@@ -170,10 +213,18 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 		fname if *cs.defnstack.last().unwrap() == DefinitionTypes::Function && cs.metastack.last().unwrap().is_empty() => 
 			cs.metastack.last_mut().unwrap().push(fname.into()),
 
+		aname if *cs.defnstack.last().unwrap() == DefinitionTypes::Action && cs.metastack.last().unwrap().is_empty() => 
+			cs.metastack.last_mut().unwrap().push(aname.into()),
+
 		// actual code must start here, as to not be confused for function name
 
 		fun if cs.functions.contains_key(fun) => {
 			cs.add2body(&backend.user_function(fun));
+		}
+
+		act if cs.actions.contains_key(act) => {
+			cs.before_action();
+			cs.add2body(&backend.user_function(act));
 		}
 
 		num if regexint.is_match(num) => cs.add2body(&backend.push_integer(num)),
@@ -185,8 +236,8 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 		"mod" => add_builtin!(fun_mod),
 		"^" | "copy" => add_builtin!(fun_copy),
 		"v" | "drop" => add_builtin!(fun_drop),
-		"puti" => add_builtin!(act_print_integer),
-		"puts" => add_builtin!(act_print_string),
+		"puti" => { cs.before_action(); add_builtin!(act_print_integer) }
+		"puts" => { cs.before_action(); add_builtin!(act_print_string) }
 		
 		word => println!("DRYFTERR - Unknown token '{}'", word),
 	}

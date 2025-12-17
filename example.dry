@@ -8,10 +8,10 @@ fun: quadra
 	double double 
 :fun
 
-fun main
+act main
 	# unambigious versions of 6/2(1+2) #
 	6 2 / 1 2 + * puti
 	6 2 1 + 2 * / puti
 	1 inc puti 
 	3 double puti
-:fun
+:act

@@ -36,6 +36,11 @@ use backends::Backend;
 type DefaultBackend = C99Backend;
 
 fn repl(targetspec: TargetSpec) {
+    // temporary disable, behavior on NASM is a bit different
+    if targetspec.backend == "NASM64" {
+        panic!("NASM64 unsupported for repl currently");
+    }
+    
     loop {
         print!("Dryft repl> ");
         io::stdout().flush().unwrap();   // flush so it appears immediately
@@ -46,6 +51,7 @@ fn repl(targetspec: TargetSpec) {
         if input.trim().is_empty() {
             continue;
         }
+
         match input.trim() {
             /*"#open" => {
                 let mut fname = String::new();  
@@ -62,7 +68,7 @@ fn repl(targetspec: TargetSpec) {
                 break
             }
             _ => {
-                let src = format!("fun: main {} ;", input);
+                let src = format!("act: main {} ;", input);
                 let mut backend = crate::backends::select(&targetspec.backend);
                 fs::write(&targetspec.intermediate, frontend::compile_full(backend, &src)).unwrap();
                 if let Err(e) = externalize(&targetspec.externalize) {
@@ -124,9 +130,10 @@ struct TargetSpec {
     dependencies: Vec<String>, // binaries used by the below
     intermediate: PathBuf, // file to write dryftc output to
     externalize: String, // command describing how to use an external compiler to finalize compilation. 
-    interpret: Option<String>, // command to run the final product
+    interpret: Option<String>, // command to run the final product. If none, use default system execute function (TODO)
+    linkstep: Option<String>,
     backend: String,
-}
+}   
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
