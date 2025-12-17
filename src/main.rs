@@ -170,13 +170,19 @@ pub struct Cli {
     /// output file where the dryftc assembly will be stored
     #[arg(short = 'a', long = "assembly-out")]
     pub assembly_out: Option<PathBuf>,
+
+    /// provide a path to custom target.toml descriptor
+    #[arg(long = "custom-target")]
+    pub custom_target: Option<String>, // should be pathbuf but oh well
 }
 
 fn main() {
     let cli = Cli::parse();
 
     let target_name = cli.target; 
-    let target_raw = String::from_utf8(fs::read(&format!("src/targets/{target_name}.toml")).expect("Unknown target")).expect("Bad utf8 in target description");
+    let target_raw = String::from_utf8(
+        fs::read(&cli.custom_target.unwrap_or(format!("src/targets/{target_name}.toml"))).expect("Unknown target")
+    ).expect("Bad utf8 in target description");
     let target_toml: TargetDesc = toml::from_str(&target_raw).expect("Invalid target description");
     
     // TODO: add external dependency checks
