@@ -36,7 +36,8 @@ use backends::Backend;
 type DefaultBackend = C99Backend;
 
 fn repl(targetspec: TargetSpec) {
-    // temporary disable, behavior on NASM is a bit different
+
+    // temporary disable because of how stupidly the repl pastes code into main directly
     if targetspec.backend == "NASM64" {
         panic!("NASM64 unsupported for repl currently");
     }
@@ -162,6 +163,10 @@ pub struct Cli {
     #[arg(long = "assembly-only")]
     pub assembly_only: bool,
 
+    /// only outputs an object file, without additional library linking
+    #[arg(long = "object-only")]
+    pub object_only: bool,
+
     /// output file where the dryftc assembly will be stored
     #[arg(short = 'a', long = "assembly-out")]
     pub assembly_out: Option<PathBuf>,
@@ -190,7 +195,9 @@ fn main() {
         build_file(&f, &targetspec.intermediate, &targetspec.backend);
         if !cli.assembly_only {
             assemble(&targetspec.assemble).unwrap();
-            link(&targetspec.link).unwrap();
+            if !cli.object_only {
+                link(&targetspec.link).unwrap();             
+            }
         }
     } else {
         repl(targetspec);
