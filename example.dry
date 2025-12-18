@@ -22,4 +22,6 @@ act main
 	1 0 swap puti puti
 	4 7 equals? puti
 	4 4 equals? puti
+	0 9 nequals? puti
+	0 0 nequals? puti
 :act

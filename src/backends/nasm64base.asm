@@ -127,6 +127,18 @@ _not_equal:
     mpush 0
     ret
 
+builtin_simple_non_equality:
+    call data_pop
+    mov rbx, rax
+    call data_pop
+    cmp rbx, rax
+    jne _not_equal
+    mpush 0
+    ret
+_not_equal:
+    mpush 1
+    ret
+
 
 SYSCALL_WRITE equ 1
 SYSCALL_EXIT equ 60

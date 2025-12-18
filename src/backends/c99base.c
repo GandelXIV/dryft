@@ -102,6 +102,12 @@ inline static void simple_equality() {
   psh(a == b);
 }
 
+inline static void simple_non_equality() {
+  size_t b = pop();
+  size_t a = pop();
+  psh(a != b);
+}
+
 int main() {
   fun_main();
   return 0;

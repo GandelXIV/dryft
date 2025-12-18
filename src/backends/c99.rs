@@ -30,6 +30,10 @@ impl Backend for C99Backend {
     	"simple_equality(); "
     }
 
+    fn fun_simple_non_equality(&self) -> &'static str {
+    	"simple_non_equality(); "
+    }
+
     fn fun_swap(&self) -> &'static str {
     	"swap(); "
     }

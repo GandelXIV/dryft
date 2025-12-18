@@ -34,6 +34,7 @@ pub trait Backend {
     fn fun_mod(&self) -> &'static str;
 
     fn fun_simple_equality(&self) -> &'static str;
+    fn fun_simple_non_equality(&self) -> &'static str;
 
     fn fun_copy(&self) -> &'static str;
     fn fun_drop(&self) -> &'static str;
@@ -55,6 +56,10 @@ pub struct MockBackend {}
 
 impl Backend for MockBackend {
     fn fun_simple_equality(&self) -> &'static str {
+    	""
+    }
+
+    fn fun_simple_non_equality(&self) -> &'static str {
     	""
     }
 

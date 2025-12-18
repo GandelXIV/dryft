@@ -278,6 +278,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 		"v" | "drop" => add_builtin!(fun_drop),
 		"swap" => add_builtin!(fun_swap),
 		"equals?" => add_builtin!(fun_simple_equality),
+		"nequals?" => add_builtin!(fun_simple_non_equality),
 		"puti" => { cs.before_action(); add_builtin!(act_print_integer) }
 		"puts" => { cs.before_action(); add_builtin!(act_print_string) }
 		

@@ -30,6 +30,10 @@ impl Backend for Nasm64Backend {
     	"\t call builtin_simple_equality\n"
     }
 
+    fn fun_simple_non_equality(&self) -> &'static str {
+    	"\t call builtin_simple_non_equality\n"
+    }
+
     fn fun_swap(&self) -> &'static str {
     	"\t call data_swap\n"
     }
