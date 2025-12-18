@@ -27,7 +27,7 @@ impl Backend for Nasm64Backend {
     }
 
     fn linkin_function(&self, name: &str) -> String {
-        todo!()
+        format!("\nextern {name}\nfun_{name}:\n\tcall {name}\n\tret\n\n")
     }
 
     fn fun_add(&self) -> &'static str {
