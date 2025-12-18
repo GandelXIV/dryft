@@ -296,7 +296,7 @@ mod tests {
 
     #[test]
     fn simple_parse() {
-        let mut backend : Box<dyn Backend> = Box::new(MockBackend {});
+        let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
         let mut cs = compile(&mut backend, "fun: inc\n\t1 + ;fun");
         assert_eq!(
             cs.log_tokens,
@@ -307,16 +307,16 @@ mod tests {
 
     #[test]
     fn semicolon_ending() {
-        let mut backend : Box<dyn Backend> = Box::new(MockBackend {});
+        let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
         let mut cs = compile(&mut backend, "fun: id ;");
-        let mut backend : Box<dyn Backend> = Box::new(MockBackend {});
+        let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
         let mut cs2 = compile(&mut backend, "fun: id ;fun");
         assert_eq!(cs.out, cs2.out);
     }
 
     #[test]
     fn function_compilation() {
-        let mut backend : Box<dyn Backend> = Box::new(C99Backend {});
+        let mut backend: Box<dyn Backend> = Box::new(C99Backend {});
         let mut cs = compile(&mut backend, "fun: sum3 + + ;fun");
 
         assert_eq!(
@@ -327,7 +327,7 @@ mod tests {
 
     #[test]
     fn strings() {
-        let mut backend : Box<dyn Backend> = Box::new(C99Backend {});
+        let mut backend: Box<dyn Backend> = Box::new(C99Backend {});
         let mut cs = compile(&mut backend, "fun idk \" # fake comment # \" ; ");
     }
 }

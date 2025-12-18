@@ -27,15 +27,15 @@ impl Backend for Nasm64Backend {
     }
 
     fn fun_simple_equality(&self) -> &'static str {
-    	"\t call builtin_simple_equality\n"
+        "\t call builtin_simple_equality\n"
     }
 
     fn fun_simple_non_equality(&self) -> &'static str {
-    	"\t call builtin_simple_non_equality\n"
+        "\t call builtin_simple_non_equality\n"
     }
 
     fn fun_swap(&self) -> &'static str {
-    	"\t call data_swap\n"
+        "\t call data_swap\n"
     }
 
     fn linkin_function(&self, name: &str) -> String {

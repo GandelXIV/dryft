@@ -74,12 +74,10 @@ fn repl(targetspec: TargetSpec) {
                 .unwrap();
                 if let Err(e) = assemble(&targetspec.assemble) {
                     println!("{}", e);
+                } else if let Err(e) = link(&targetspec.link) {
+                    println!("{}", e);
                 } else {
-                    if let Err(e) = link(&targetspec.link) {
-                        println!("{}", e);
-                    } else {
-                        interpret(targetspec.interpret.clone().unwrap().as_ref());
-                    }
+                    interpret(targetspec.interpret.clone().unwrap().as_ref());
                 }
             }
         }
@@ -185,7 +183,7 @@ fn main() {
     let target_name = cli.target;
     let target_raw = String::from_utf8(
         fs::read(
-            &cli.custom_target
+            cli.custom_target
                 .unwrap_or(format!("src/targets/{target_name}.toml")),
         )
         .expect("Unknown target"),

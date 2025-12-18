@@ -27,15 +27,15 @@ impl Backend for C99Backend {
     }
 
     fn fun_simple_equality(&self) -> &'static str {
-    	"simple_equality(); "
+        "simple_equality(); "
     }
 
     fn fun_simple_non_equality(&self) -> &'static str {
-    	"simple_non_equality(); "
+        "simple_non_equality(); "
     }
 
     fn fun_swap(&self) -> &'static str {
-    	"swap(); "
+        "swap(); "
     }
 
     fn linkin_function(&self, name: &str) -> String {
