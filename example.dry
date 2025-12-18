@@ -20,4 +20,6 @@ act main
 	1 inc puti 
 	3 double puti
 	1 0 swap puti puti
+	4 7 equals? puti
+	4 4 equals? puti
 :act

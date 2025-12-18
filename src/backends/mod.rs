@@ -33,6 +33,8 @@ pub trait Backend {
     fn fun_div(&self) -> &'static str;
     fn fun_mod(&self) -> &'static str;
 
+    fn fun_simple_equality(&self) -> &'static str;
+
     fn fun_copy(&self) -> &'static str;
     fn fun_drop(&self) -> &'static str;
     fn fun_swap(&self) -> &'static str;
@@ -52,6 +54,10 @@ pub fn select(name: &str) -> Box<dyn Backend> {
 pub struct MockBackend {}
 
 impl Backend for MockBackend {
+    fn fun_simple_equality(&self) -> &'static str {
+    	""
+    }
+
     fn fun_swap(&self) -> &'static str {
     	""
     }

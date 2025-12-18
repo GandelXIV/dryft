@@ -90,10 +90,16 @@ inline static void drop() {
 }
 
 inline static void swap() {
-  size_t a = pop();
   size_t b = pop();
-  psh(a);
+  size_t a = pop();
   psh(b);
+  psh(a);
+}
+
+inline static void simple_equality() {
+  size_t b = pop();
+  size_t a = pop();
+  psh(a == b);
 }
 
 int main() {

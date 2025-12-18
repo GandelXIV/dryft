@@ -115,6 +115,18 @@ builtin_mod:
     mpush rdx
     ret
 
+builtin_simple_equality:
+    call data_pop
+    mov rbx, rax
+    call data_pop
+    cmp rbx, rax
+    jne _not_equal
+    mpush 1
+    ret
+_not_equal:
+    mpush 0
+    ret
+
 
 SYSCALL_WRITE equ 1
 SYSCALL_EXIT equ 60

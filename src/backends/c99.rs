@@ -26,6 +26,10 @@ impl Backend for C99Backend {
         cbase
     }
 
+    fn fun_simple_equality(&self) -> &'static str {
+    	"simple_equality(); "
+    }
+
     fn fun_swap(&self) -> &'static str {
     	"swap(); "
     }
