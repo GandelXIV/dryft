@@ -17,11 +17,11 @@ act main
 	# unambigious versions of 6/2(1+2) #
 	6 2 / 1 2 + * puti # (6/2)(1+2) #
 	6 2 1 + 2 * / puti # 6/(2(1+2)) #
-	1 inc puti 
-	3 double puti
-	1 0 swap puti puti
-	4 7 equals? puti
-	4 4 equals? puti
-	0 9 nequals? puti
-	0 0 nequals? puti
+	1 inc puti 		    # 2 #
+	3 double puti       # 6 #
+	1 0 swap puti puti  # 1 0 #
+	4 7 equals? puti    # 0 #
+	4 4 equals? puti    # 1 #
+	0 9 nequals? puti   # 1 #
+	0 0 nequals? puti   # 0 #
 :act
