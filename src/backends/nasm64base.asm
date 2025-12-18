@@ -120,10 +120,10 @@ builtin_simple_equality:
     mov rbx, rax
     call data_pop
     cmp rbx, rax
-    jne _not_equal
+    jne ._not_equal
     mpush 1
     ret
-_not_equal:
+._not_equal:
     mpush 0
     ret
 
@@ -132,10 +132,10 @@ builtin_simple_non_equality:
     mov rbx, rax
     call data_pop
     cmp rbx, rax
-    jne _not_equal
+    jne ._not_equal
     mpush 0
     ret
-_not_equal:
+._not_equal:
     mpush 1
     ret
 
