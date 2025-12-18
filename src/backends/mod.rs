@@ -35,6 +35,7 @@ pub trait Backend {
 
     fn fun_copy(&self) -> &'static str;
     fn fun_drop(&self) -> &'static str;
+    fn fun_swap(&self) -> &'static str;
 
     fn act_print_integer(&self) -> &'static str;
     fn act_print_string(&self) -> &'static str;
@@ -51,6 +52,10 @@ pub fn select(name: &str) -> Box<dyn Backend> {
 pub struct MockBackend {}
 
 impl Backend for MockBackend {
+    fn fun_swap(&self) -> &'static str {
+    	""
+    }
+
     fn linkin_function(&self, name: &str) -> String {
         "".to_string()
     }

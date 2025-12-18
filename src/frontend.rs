@@ -276,8 +276,12 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 		"mod" => add_builtin!(fun_mod),
 		"^" | "copy" => add_builtin!(fun_copy),
 		"v" | "drop" => add_builtin!(fun_drop),
+		"swap" => add_builtin!(fun_swap),
 		"puti" => { cs.before_action(); add_builtin!(act_print_integer) }
 		"puts" => { cs.before_action(); add_builtin!(act_print_string) }
+		//"=?" => add_builtin!(fun_equals),
+		//"!=?" => add_builtin!(fun_not_equals),
+		//">" => add_builtin!(fun_greater)
 		
 		word => println!("DRYFTERR - Unknown token '{}'", word),
 	}

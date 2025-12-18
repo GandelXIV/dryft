@@ -56,6 +56,16 @@ data_copy:
     mpush rbx
     ret
 
+; uses rax rbx rcx rdi
+data_swap:
+    call data_pop
+    mov rbx, rax
+    call data_pop
+    mov rcx, rax
+    mpush rbx
+    mpush rcx
+    ret
+
 ; tested
 builtin_add:
     call data_pop

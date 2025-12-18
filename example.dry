@@ -11,7 +11,7 @@ fun: quadra
 # you can link-in external functions #
 # note that using the FFI in this way is potentially unsafe #
 
-linkin fun park
+#linkin fun park#
 
 act main
 	# unambigious versions of 6/2(1+2) #
@@ -19,4 +19,5 @@ act main
 	6 2 1 + 2 * / puti # 6/(2(1+2)) #
 	1 inc puti 
 	3 double puti
+	1 0 swap puti puti
 :act

@@ -26,6 +26,10 @@ impl Backend for Nasm64Backend {
         base
     }
 
+    fn fun_swap(&self) -> &'static str {
+    	"\t call data_swap\n"
+    }
+
     fn linkin_function(&self, name: &str) -> String {
         format!("\nextern {name}\nfun_{name}:\n\tcall {name}\n\tret\n\n")
     }

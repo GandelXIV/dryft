@@ -26,6 +26,10 @@ impl Backend for C99Backend {
         cbase
     }
 
+    fn fun_swap(&self) -> &'static str {
+    	"swap(); "
+    }
+
     fn linkin_function(&self, name: &str) -> String {
         // because we prepend all user functions with fun_ , we have to get to the linked function indirectly
         format!("extern void {name}();\nvoid fun_{name}(){{ {name}(); }}\n")

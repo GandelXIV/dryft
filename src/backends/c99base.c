@@ -89,6 +89,13 @@ inline static void drop() {
   pop();
 }
 
+inline static void swap() {
+  size_t a = pop();
+  size_t b = pop();
+  psh(a);
+  psh(b);
+}
+
 int main() {
   fun_main();
   return 0;
