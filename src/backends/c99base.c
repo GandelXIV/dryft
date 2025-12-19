@@ -72,11 +72,11 @@ inline static void mod() {
 }
 
 inline static void puti() {
-  printf("%zu ", pop());
+  printf("%zu", pop());
 }
 
 inline static void putstr() {
-  printf("%s ", (char*) pop());
+  printf("%s", (char*) pop());
 }
 
 inline static void copy() {
