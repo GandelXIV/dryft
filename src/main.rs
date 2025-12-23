@@ -77,7 +77,7 @@ fn repl(targetspec: TargetSpec) {
                 } else if let Err(e) = link(&targetspec.link) {
                     println!("{}", e);
                 } else {
-                    interpret(targetspec.interpret.clone().unwrap().as_ref());
+                    interpret(targetspec.interpret.clone().unwrap_or("./a.out".to_string()).as_ref());
                 }
             }
         }
@@ -114,7 +114,7 @@ fn link(cmd: &str) -> Result<(), String> {
 // execute step after externalize(), necessary for VM-based backends
 // TODO: currently waits for finish to disply stdout, which is not good for interactive apps. Start a proper process in future.
 fn interpret(cmd: &str) {
-    let (stdout, _) = bash("./a.out");
+    let (stdout, _) = bash(cmd);
     println!("{}", stdout);
 }
 
@@ -175,6 +175,10 @@ pub struct Cli {
     /// provide a path to custom target.toml descriptor
     #[arg(long = "custom-target")]
     pub custom_target: Option<String>, // should be pathbuf but oh well
+
+    /// Run the final executable using the pre-defined interpreter
+    #[arg(short = 'r', long = "run")]
+    pub is_run: bool,
 }
 
 fn main() {
@@ -214,6 +218,9 @@ fn main() {
             if !cli.object_only {
                 link(&targetspec.link).unwrap();
             }
+        }
+        if cli.is_run {
+            interpret(targetspec.interpret.unwrap_or("./a.out".to_string()).as_ref());
         }
     } else {
         repl(targetspec);
