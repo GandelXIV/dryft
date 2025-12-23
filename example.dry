@@ -2,19 +2,20 @@
 
 fun inc 1 + ;
 
-fun: double copy + ;
+fun double 
+	copy + ;
 
-fun: quadra 
+fun quadra 
 	double double 
 :fun
 
 # actions are functions that may have side effects #
+# calling an action from inside a function is illegal #
 act nl "\n" puts ;
 act space " " puts ;
 
-# you can link-in external functions #
+# you can link-in external symbols #
 # note that using the FFI in this way is potentially unsafe #
-
 #linkin fun park#
 
 act main
@@ -25,11 +26,24 @@ act main
 	"(6/2)(1+2) = " puts 6 2 / 1 2 + * puti nl
 	"6/(2(1+2)) = " puts 6 2 1 + 2 * / puti nl
 
-	"1 incremented = "   puts 1 inc puti nl
-	"3 doubled = " puts  3 double puti nl
-	"1 <-> 0 = " puts 	1 0 swap puti space puti nl # this line is okay because we print the args in opposite order #
-	"4 eq 7 = " puts 	4 7 equals? puti nl
-	"4 eq 4 = " puts		4 4 equals? puti nl
-	"0 ne 9 = " puts 	0 9 nequals? puti nl
-	"0 ne 0 = " puts 	0 0 nequals? puti nl
+	"1 incremented = " puts 
+	1 inc puti nl
+	
+	"3 doubled = " puts 
+	3 double puti nl
+	
+	"1 <-> 0 = " puts 	
+	1 0 swap puti space puti nl # this line is okay because we print the args in opposite order #
+	
+	"4 eq 7 = " puts 	
+	4 7 equals? puti nl
+	
+	"4 eq 4 = " puts	
+	4 4 equals? puti nl
+	
+	"0 ne 9 = " puts 	
+	0 9 nequals? puti nl
+	
+	"0 ne 0 = " puts 	
+	0 0 nequals? puti nl
 :act

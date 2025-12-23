@@ -1,0 +1,59 @@
+%YAML 1.2
+---
+name: Dryft
+scope: source.dryft
+file_extensions:
+  - dry
+  - dryft
+contexts:
+  main:
+    - include: comments
+    - include: keywords
+    - include: definitions
+    - include: strings
+    - include: numbers
+    - include: identifiers
+
+  comments:
+    - match: '#'
+      scope: punctuation.definition.comment.dryft
+      push:
+        - meta_scope: comment.block.dryft
+        - match: '#'
+          scope: punctuation.definition.comment.dryft
+          pop: true
+
+  keywords:
+    - match: '\b(fun|act|var):?\s+([a-zA-Z_][a-zA-Z0-9_?]*)'
+      captures:
+        1: keyword.control.dryft
+        2: variable.function.definition.dryft
+    - match: ':?(fun|act|loop|then|else|linkin):?'
+      scope: keyword.control.dryft
+
+  definitions:
+    - match: '\b(fun|act|var)\s+([a-zA-Z_][a-zA-Z0-9_?]*)'
+      captures:
+        1: keyword.control.dryft
+        2: entity.name.function.definition.dryft
+
+  numbers:
+    - match: '\b\d+\b'
+      scope: constant.numeric.integer.dryft
+
+  identifiers:
+    - match: '[a-zA-Z_][a-zA-Z0-9_?]*'
+      scope: entity.name.function.call.dryft
+
+  strings:
+    - match: '"'
+      scope: punctuation.definition.string.begin.dryft
+      push: double_quoted_string
+
+  double_quoted_string:
+    - meta_scope: string.quoted.double.dryft
+    - match: '\\.'
+      scope: constant.character.escape.dryft
+    - match: '"'
+      scope: punctuation.definition.string.end.dryft
+      pop: true
