@@ -42,6 +42,8 @@ pub trait Backend {
 
     fn act_print_integer(&self) -> &'static str;
     fn act_print_string(&self) -> &'static str;
+
+    fn create_then_condition(&self, body: String) -> String;
 }
 
 pub fn select(name: &str) -> Box<dyn Backend> {
@@ -55,6 +57,10 @@ pub fn select(name: &str) -> Box<dyn Backend> {
 pub struct MockBackend {}
 
 impl Backend for MockBackend {
+    fn create_then_condition(&self, body: String) -> String {
+        "".to_string()
+    }
+
     fn fun_simple_equality(&self) -> &'static str {
         ""
     }

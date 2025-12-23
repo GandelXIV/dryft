@@ -27,10 +27,11 @@ enum DefinitionTypes {
     Function,
     Action,
     Linkin,
+    Then,
+    Else,
     Negative, // purely comparative for compiler purposes
 
     Loop,
-    Conditional,
 }
 
 pub struct CompileState {
@@ -171,6 +172,14 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         };
     }
 
+    macro_rules! add_then_condition {
+        () => {
+            let body = cs.bodystack.pop().unwrap();
+
+            cs.add2body(&backend.create_then_condition(body));
+        };
+    }
+
     macro_rules! add_builtin {
         ($prop:ident) => {{
             cs.add2body(backend.$prop())
@@ -230,16 +239,27 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 		}
 
 		// this keyword is funamentally unsafe, consider adding changing to unsafe_linkin or something like that
-		"linkin" /* TODO: make a 'park' joke with this ;P */ => {
+		"linkin" => {
 			cs.defnstack.push(DefinitionTypes::Linkin);
 			cs.metastack.push(vec![]);
 		}
+
+        "then" | "then:" => {
+            cs.defnstack.push(DefinitionTypes::Then);
+            cs.bodystack.push("".into());
+        }
+
+        ":then" => {
+            check_terminator!(Then);
+            add_then_condition!();
+        }
 
 		";" | "end" => {
 			match cs.defnstack.pop().expect("DRYFTERR - Misplaced ;") {
 				// keep {} notation instead of , for the macros to work
 				DefinitionTypes::Function => { add_function!(); }
 				DefinitionTypes::Action => { add_action!(); }
+                DefinitionTypes::Then => { add_then_condition!(); }
 				_ => todo!(),
 			}
 		}

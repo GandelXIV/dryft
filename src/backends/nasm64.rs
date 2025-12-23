@@ -20,6 +20,10 @@ use crate::backends::Backend;
 pub struct Nasm64Backend {}
 
 impl Backend for Nasm64Backend {
+    fn create_then_condition(&self, body: String) -> String {
+        todo!()
+    }
+
     fn complete(&self, compiled: &str) -> String {
         let mut base = include_str!("nasm64base.asm").to_string();
         base.push_str(compiled);
