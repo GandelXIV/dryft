@@ -46,4 +46,8 @@ act main
 	
 	"0 ne 0 = " puts 	
 	0 0 nequals? puti nl
+
+	"if 10 + 10 == 20 -> print 'equal!' >>> " puts
+	10 10 + 20 equals? then: "equal!" puts ;
+	
 :act
