@@ -6,3 +6,4 @@
 - Full (optional) type inference
 
 ![example code](./examples/syntax.png "Future example code")
+![example code](./examples/syntax2.png "Current example code")
