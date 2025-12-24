@@ -36,7 +36,7 @@ void __size_t_to_string(size_t num, char *buf) {
 
 void c_print_string() {
 	char* a = (char*) dryft_pop();
-	puts(a);
+	fputs(a, stdout);
 }
 
 void c_print_int() {
@@ -44,7 +44,7 @@ void c_print_int() {
 	size_t a = dryft_pop();
 	char* buf = (char*) malloc(512);
 	__size_t_to_string(a, buf);
-	puts(buf);
+	fputs(buf, stdout);
 	free((void*) buf);
 }
 

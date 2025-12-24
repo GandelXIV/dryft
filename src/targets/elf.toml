@@ -2,6 +2,7 @@
 backend = "NASM64"
 dependencies = [ "nasm", "ld" ]
 intermediate = "build/ir.asm"
+stdlib = "gcc std/std.c -c -fPIE -o build/stdc.o"
 assemble = "nasm -f elf64 -o build/obj.o build/ir.asm"
 link = "gcc build/obj.o build/stdc.o -o a.out" # ld is not gonna work here because stdc needs libc init
 interpret = "./a.out"

@@ -1,4 +1,5 @@
 # Most of this is subject to change, this file serves as a testing ground for current features #
+include std/io
 
 fun inc 1 + ;
 
@@ -11,8 +12,8 @@ fun quadra
 
 # actions are functions that may have side effects #
 # calling an action from inside a function is illegal #
-act nl "\n" puts ;
-act space " " puts ;
+act nl "\n" prints ;
+act space " " prints ;
 
 # you can link-in external symbols #
 # note that using the FFI in this way is potentially unsafe #
@@ -20,38 +21,38 @@ act space " " puts ;
 
 act main
 
-"Hello World\n" puts
+"Hello World\n" prints
 
 # unambigious versions of 6/2(1+2) #
 # no brackets or precedence rules needed #
-"(6/2)(1+2) = " puts 6 2 / 1 2 + * puti nl
+"(6/2)(1+2) = " prints 6 2 / 1 2 + * printi nl
 
-"6/(2(1+2)) = " puts 6 2 1 + 2 * / puti nl
+"6/(2(1+2)) = " prints 6 2 1 + 2 * / printi nl
 
-"1 incremented = " puts 
-1 inc puti nl
+"1 incremented = " prints 
+1 inc printi nl
 
-"3 doubled = " puts 
-3 double puti nl
+"3 doubled = " prints 
+3 double printi nl
 
-"1 <-> 0 = " puts 	
-1 0 swap puti space puti nl # this line is okay because we print the args in opposite order #
+"1 <-> 0 = " prints 	
+1 0 swap printi space printi nl # this line is okay because we print the args in opposite order #
 
-"4 eq 7 = " puts 	
-4 7 equals? puti nl
+"4 eq 7 = " prints 	
+4 7 equals? printi nl
 
-"4 eq 4 = " puts	
-4 4 equals? puti nl
+"4 eq 4 = " prints	
+4 4 equals? printi nl
 
-"0 ne 9 = " puts 	
-0 9 nequals? puti nl
+"0 ne 9 = " prints 	
+0 9 nequals? printi nl
 
-"0 ne 0 = " puts 	
-0 0 nequals? puti nl
+"0 ne 0 = " prints 	
+0 0 nequals? printi nl
 
-"if 10 + 10 == 20 -> print 'equal!' >>> " puts
-10 10 + 20 equals? then: "equal!" puts ;
+"if 10 + 10 == 20 -> print 'equal!' >>> " prints
+10 10 + 20 equals? then: "equal!" prints ;
 
-1 then: 1 then: "\nnested conditionals work\n" puts :then :then
+1 then: 1 then: "\nnested conditionals work\n" prints :then :then
 
 :act
