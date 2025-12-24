@@ -20,6 +20,8 @@ use crate::backends::Backend;
 use crate::backends::MockBackend;
 use regex::Regex;
 use std::collections::HashMap;
+use std::fs;
+use std::path::{Path, PathBuf};
 use strum_macros::IntoStaticStr;
 
 #[derive(Debug, PartialEq, IntoStaticStr)]
@@ -28,7 +30,7 @@ enum DefinitionTypes {
     Action,
     Linkin,
     Then,
-    Else,
+    Include,
     Negative, // purely comparative for compiler purposes
 
     Loop,
@@ -50,6 +52,8 @@ pub struct CompileState {
     pub iscomment: bool,
     pub isstring: bool,
     pub newstring: String,
+
+    pub prepend: String,
 }
 
 impl CompileState {
@@ -66,6 +70,7 @@ impl CompileState {
             iscomment: false,
             isstring: false,
             newstring: String::new(),
+            prepend: String::new(),
         }
     }
 
@@ -93,7 +98,16 @@ pub fn compile(backend: &mut Box<dyn Backend>, code: &str) -> CompileState {
         }};
     }
 
-    for letter in code.chars() {
+    let mut code = code.to_string();
+
+    while !code.is_empty() {
+        if !cs.prepend.is_empty() {
+            code.insert_str(0, &cs.prepend);
+            cs.prepend = String::new();
+        }
+
+        let letter = code.remove(0);
+
         match letter {
             c if cs.iscomment => {
                 if c == '#' {
@@ -222,6 +236,13 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 			}
 		}
 
+        f if *cs.defnstack.last().unwrap_or(&DefinitionTypes::Negative) == DefinitionTypes::Include => {
+            cs.defnstack.pop();
+            let mut pat = String::from(f);
+            pat.push_str(".dry");
+            cs.prepend.push_str(&String::from_utf8(fs::read(&pat).expect("Could not locate include")).unwrap());
+        }
+
 		"fun:" | "fun" => new_definition!(Function),
 
 		";fun" | "endfun" | ":fun" => {
@@ -243,6 +264,10 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 			cs.defnstack.push(DefinitionTypes::Linkin);
 			cs.metastack.push(vec![]);
 		}
+
+        "include" | "include:" => {
+            cs.defnstack.push(DefinitionTypes::Include);
+        }
 
         "then" | "then:" => {
             cs.defnstack.push(DefinitionTypes::Then);

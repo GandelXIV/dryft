@@ -71,7 +71,7 @@ impl Backend for Nasm64Backend {
     }
 
     fn fun_drop(&self) -> &'static str {
-        "\tcall data_pop\n"
+        "\tcall dryft_pop\n"
     }
 
     fn act_print_integer(&self) -> &'static str {

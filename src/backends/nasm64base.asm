@@ -13,6 +13,8 @@
 ; You should have received a copy of the GNU General Public License
 ; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+default rel
+
 STACK_SIZE equ 1000 ; * 8
 PRINT_SIZE equ 128  ; * 1
 ITEM_SIZE equ 8
@@ -27,7 +29,8 @@ section .text
 
 ; input => rdi
 ; uses rax rdi
-data_push:
+extern dryft_push
+dryft_push:
     mov rax, [sptr]
     mov [rax], rdi
     add qword [sptr], ITEM_SIZE
@@ -35,12 +38,13 @@ data_push:
 
 %macro mpush 1
     mov rdi, %1
-    call data_push
+    call dryft_push
 %endmacro
 
 ; rax => output
 ; uses rax
-data_pop: 
+extern dryft_pop
+dryft_pop: 
     mov rax, [sptr]
     sub qword [sptr], ITEM_SIZE
     mov rax, [sptr]
@@ -50,7 +54,7 @@ data_pop:
 ; rbx => value
 ; uses rax rbx rdi
 data_copy:
-    call data_pop
+    call dryft_pop
     mov rbx, rax
     mpush rax
     mpush rbx
@@ -58,9 +62,9 @@ data_copy:
 
 ; uses rax rbx rcx rdi
 data_swap:
-    call data_pop
+    call dryft_pop
     mov rbx, rax
-    call data_pop
+    call dryft_pop
     mov rcx, rax
     mpush rbx
     mpush rcx
@@ -68,27 +72,27 @@ data_swap:
 
 ; tested
 builtin_add:
-    call data_pop
+    call dryft_pop
     mov rbx, rax
-    call data_pop
+    call dryft_pop
     add rax, rbx
     mpush rax
     ret
 
 ; tested
 builtin_sub:
-    call data_pop
+    call dryft_pop
     mov rbx, rax
-    call data_pop
+    call dryft_pop
     sub rax, rbx
     mpush rax
     ret
 
 ; tested
 builtin_mul:
-    call data_pop
+    call dryft_pop
     mov rbx, rax
-    call data_pop
+    call dryft_pop
     imul rax, rbx
     mpush rax
     ret
@@ -96,9 +100,9 @@ builtin_mul:
 ; src: ChatGPT
 ; tested
 builtin_div:
-    call data_pop
+    call dryft_pop
     mov rbx, rax
-    call data_pop
+    call dryft_pop
     cqo
     idiv rbx
     mpush rax
@@ -107,18 +111,18 @@ builtin_div:
 ; src: ChatGPT
 ; tested
 builtin_mod:
-    call data_pop
+    call dryft_pop
     mov rbx, rax
-    call data_pop
+    call dryft_pop
     cqo
     idiv rbx
     mpush rdx
     ret
 
 builtin_simple_equality:
-    call data_pop
+    call dryft_pop
     mov rbx, rax
-    call data_pop
+    call dryft_pop
     cmp rbx, rax
     jne ._not_equal
     mpush 1
@@ -128,9 +132,9 @@ builtin_simple_equality:
     ret
 
 builtin_simple_non_equality:
-    call data_pop
+    call dryft_pop
     mov rbx, rax
-    call data_pop
+    call dryft_pop
     cmp rbx, rax
     jne ._not_equal
     mpush 0
@@ -156,7 +160,7 @@ EXIT_OK equ 0
 ; This function is not correct lmao
 ; uses rax rdi rsi rdx
 builtin_print_digit:
-    call data_pop
+    call dryft_pop
     add rax, 48 ; convert number to its ascii representation
     mov [msgbuf], rax
 
@@ -169,9 +173,11 @@ builtin_print_digit:
     linux_syscall SYSCALL_WRITE, CODE_STDOUT, msgbuf, 2
     ret
 
-global _start
+; we can not use _start since we need to link with gcc
 
-_start:
+global dryft_main
+
+dryft_main:
     ; stack init
     lea rax, [rel stack]
     mov [sptr], rax

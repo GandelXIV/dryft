@@ -21,7 +21,7 @@ pub struct C99Backend {}
 
 impl Backend for C99Backend {
     fn create_then_condition(&self, body: String) -> String {
-        format!("if (pop()) {{\n\t{body}\n}}")
+        format!("if (dryft_pop()) {{\n\t{body}\n}}")
     }
 
     fn complete(&self, compiled: &str) -> String {
@@ -93,10 +93,10 @@ impl Backend for C99Backend {
     }
 
     fn push_integer(&self, i: &str) -> String {
-        format!("psh({i}); ")
+        format!("dryft_push({i}); ")
     }
 
     fn push_string(&self, s: &str) -> String {
-        format!("psh(\"{s}\"); ")
+        format!("dryft_push(\"{s}\"); ")
     }
 }

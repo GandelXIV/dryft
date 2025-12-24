@@ -105,9 +105,7 @@ fn assemble(cmd: &str) -> Result<(), String> {
 
 fn link(cmd: &str) -> Result<(), String> {
     let (_, stderr) = bash(cmd);
-    if !stderr.is_empty() {
-        return Err(stderr);
-    }
+    println!("{}", stderr);
     return Ok(());
 }
 

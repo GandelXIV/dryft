@@ -23,7 +23,7 @@
 size_t stack [STACK_SIZE];
 size_t* sptr = stack;
 
-inline static void psh(size_t x) {
+extern void dryft_push(size_t x) {
   *sptr = x;
   sptr += 1;
   if (sptr >= stack + STACK_SIZE) {
@@ -31,7 +31,7 @@ inline static void psh(size_t x) {
   }
 }
 
-inline static size_t pop() {
+extern size_t dryft_pop() {
   if (sptr <= 0) {
     // PANIC
   }
@@ -46,69 +46,68 @@ inline static size_t top() {
 /* define methods */
 
 inline static void add() {
-  psh(pop() + pop());
+  dryft_push(dryft_pop() + dryft_pop());
 }
 
 inline static void mul() {
-  psh(pop() * pop());
+  dryft_push(dryft_pop() * dryft_pop());
 }
 
 inline static void sub() {
-  size_t b = pop();
-  size_t a = pop();
-  psh(a - b);
+  size_t b = dryft_pop();
+  size_t a = dryft_pop();
+  dryft_push(a - b);
 }
 
 inline static void div() {
-  size_t b = pop();
-  size_t a = pop();
-  psh(a / b);
+  size_t b = dryft_pop();
+  size_t a = dryft_pop();
+  dryft_push(a / b);
 }
 
 inline static void mod() {
-  size_t b = pop();
-  size_t a = pop();
-  psh(a % b);
+  size_t b = dryft_pop();
+  size_t a = dryft_pop();
+  dryft_push(a % b);
 }
 
 inline static void puti() {
-  printf("%zu", pop());
+  printf("%zu", dryft_pop());
 }
 
 inline static void putstr() {
-  printf("%s", (char*) pop());
+  printf("%s", (char*) dryft_pop());
 }
 
 inline static void copy() {
-  size_t a = pop();
-  psh(a);
-  psh(a);
+  size_t a = dryft_pop();
+  dryft_push(a);
+  dryft_push(a);
 }
 
 inline static void drop() {
-  pop();
+  dryft_pop();
 }
 
 inline static void swap() {
-  size_t b = pop();
-  size_t a = pop();
-  psh(b);
-  psh(a);
+  size_t b = dryft_pop();
+  size_t a = dryft_pop();
+  dryft_push(b);
+  dryft_push(a);
 }
 
 inline static void simple_equality() {
-  size_t b = pop();
-  size_t a = pop();
-  psh(a == b);
+  size_t b = dryft_pop();
+  size_t a = dryft_pop();
+  dryft_push(a == b);
 }
 
 inline static void simple_non_equality() {
-  size_t b = pop();
-  size_t a = pop();
-  psh(a != b);
+  size_t b = dryft_pop();
+  size_t a = dryft_pop();
+  dryft_push(a != b);
 }
 
-int main() {
+void dryft_main() {
   fun_main();
-  return 0;
 }

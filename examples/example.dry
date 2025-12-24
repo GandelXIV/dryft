@@ -19,35 +19,39 @@ act space " " puts ;
 #linkin fun park#
 
 act main
-	"Hello World\n" puts
 
-	# unambigious versions of 6/2(1+2) #
-	# no brackets or precedence rules needed #
-	"(6/2)(1+2) = " puts 6 2 / 1 2 + * puti nl
-	"6/(2(1+2)) = " puts 6 2 1 + 2 * / puti nl
+"Hello World\n" puts
 
-	"1 incremented = " puts 
-	1 inc puti nl
-	
-	"3 doubled = " puts 
-	3 double puti nl
-	
-	"1 <-> 0 = " puts 	
-	1 0 swap puti space puti nl # this line is okay because we print the args in opposite order #
-	
-	"4 eq 7 = " puts 	
-	4 7 equals? puti nl
-	
-	"4 eq 4 = " puts	
-	4 4 equals? puti nl
-	
-	"0 ne 9 = " puts 	
-	0 9 nequals? puti nl
-	
-	"0 ne 0 = " puts 	
-	0 0 nequals? puti nl
+# unambigious versions of 6/2(1+2) #
+# no brackets or precedence rules needed #
+"(6/2)(1+2) = " puts 6 2 / 1 2 + * puti nl
 
-	"if 10 + 10 == 20 -> print 'equal!' >>> " puts
-	10 10 + 20 equals? then: "equal!" puts ;
-	
+"6/(2(1+2)) = " puts 6 2 1 + 2 * / puti nl
+
+"1 incremented = " puts 
+1 inc puti nl
+
+"3 doubled = " puts 
+3 double puti nl
+
+"1 <-> 0 = " puts 	
+1 0 swap puti space puti nl # this line is okay because we print the args in opposite order #
+
+"4 eq 7 = " puts 	
+4 7 equals? puti nl
+
+"4 eq 4 = " puts	
+4 4 equals? puti nl
+
+"0 ne 9 = " puts 	
+0 9 nequals? puti nl
+
+"0 ne 0 = " puts 	
+0 0 nequals? puti nl
+
+"if 10 + 10 == 20 -> print 'equal!' >>> " puts
+10 10 + 20 equals? then: "equal!" puts ;
+
+1 then: 1 then: "\nnested conditionals work\n" puts :then :then
+
 :act
