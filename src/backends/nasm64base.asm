@@ -157,21 +157,22 @@ EXIT_OK equ 0
     syscall
 %endmacro
 
-; This function is not correct lmao
-; uses rax rdi rsi rdx
-builtin_print_digit:
-    call dryft_pop
-    add rax, 48 ; convert number to its ascii representation
-    mov [msgbuf], rax
-
-    ; add a trailing space for clarity
-    mov rax, msgbuf
-    add rax, 1
-    mov rbx, CHAR_SPACE
-    mov [rax], rbx
-
-    linux_syscall SYSCALL_WRITE, CODE_STDOUT, msgbuf, 2
-    ret
+; deprecated
+;; This function is not correct lmao
+;; uses rax rdi rsi rdx
+;builtin_print_digit:
+;    call dryft_pop
+;    add rax, 48 ; convert number to its ascii representation
+;    mov [msgbuf], rax
+;
+;    ; add a trailing space for clarity
+;    mov rax, msgbuf
+;    add rax, 1
+;    mov rbx, CHAR_SPACE
+;    mov [rax], rbx
+;
+;    linux_syscall SYSCALL_WRITE, CODE_STDOUT, msgbuf, 2
+;    ret
 
 ; we can not use _start since we need to link with gcc
 

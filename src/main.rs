@@ -65,7 +65,7 @@ fn repl(targetspec: TargetSpec) {
             }
             ".exit" | ".quit" => break,
             _ => {
-                let src = format!("act: main {} ;", input);
+                let src = format!("include std/io act: main {} ;", input);
                 let mut backend = crate::backends::select(&targetspec.backend);
                 fs::write(
                     &targetspec.intermediate,

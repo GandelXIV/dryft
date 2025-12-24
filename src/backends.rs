@@ -40,9 +40,6 @@ pub trait Backend {
     fn fun_drop(&self) -> &'static str;
     fn fun_swap(&self) -> &'static str;
 
-    fn act_print_integer(&self) -> &'static str;
-    fn act_print_string(&self) -> &'static str;
-
     fn create_then_condition(&self, body: String) -> String;
 }
 
@@ -109,10 +106,6 @@ impl Backend for MockBackend {
         ""
     }
 
-    fn act_print_integer(&self) -> &'static str {
-        ""
-    }
-
     fn create_function(&self, fname: &str, body: String) -> String {
         "".to_string()
     }
@@ -123,10 +116,6 @@ impl Backend for MockBackend {
 
     fn push_integer(&self, i: &str) -> String {
         "".to_string()
-    }
-
-    fn act_print_string(&self) -> &'static str {
-        ""
     }
 
     fn push_string(&self, s: &str) -> String {

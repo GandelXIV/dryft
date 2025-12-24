@@ -84,14 +84,6 @@ impl Backend for C99Backend {
         "drop(); "
     }
 
-    fn act_print_integer(&self) -> &'static str {
-        "puti(); "
-    }
-
-    fn act_print_string(&self) -> &'static str {
-        "putstr(); "
-    }
-
     fn push_integer(&self, i: &str) -> String {
         format!("dryft_push({i}); ")
     }

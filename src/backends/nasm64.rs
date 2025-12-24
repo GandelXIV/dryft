@@ -74,11 +74,6 @@ impl Backend for Nasm64Backend {
         "\tcall dryft_pop\n"
     }
 
-    fn act_print_integer(&self) -> &'static str {
-        // TODO: implement this multi-digit numbers
-        "\tcall builtin_print_digit\n"
-    }
-
     fn create_function(&self, fname: &str, body: String) -> String {
         format!("fun_{fname}:\n{body}\tret\n\n")
     }
@@ -89,10 +84,6 @@ impl Backend for Nasm64Backend {
 
     fn push_integer(&self, i: &str) -> String {
         format!("\tmpush {i}\n")
-    }
-
-    fn act_print_string(&self) -> &'static str {
-        todo!()
     }
 
     fn push_string(&self, s: &str) -> String {
