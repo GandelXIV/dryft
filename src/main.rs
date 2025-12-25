@@ -78,7 +78,13 @@ fn repl(targetspec: TargetSpec) {
                 } else if let Err(e) = link(&targetspec.link) {
                     println!("{}", e);
                 } else {
-                    interpret(targetspec.interpret.clone().unwrap_or("./a.out".to_string()).as_ref());
+                    interpret(
+                        targetspec
+                            .interpret
+                            .clone()
+                            .unwrap_or("./a.out".to_string())
+                            .as_ref(),
+                    );
                 }
             }
         }
@@ -226,7 +232,12 @@ fn main() {
             }
         }
         if cli.is_run {
-            interpret(targetspec.interpret.unwrap_or("./a.out".to_string()).as_ref());
+            interpret(
+                targetspec
+                    .interpret
+                    .unwrap_or("./a.out".to_string())
+                    .as_ref(),
+            );
         }
     } else {
         repl(targetspec);
