@@ -20,6 +20,10 @@ use crate::backends::Backend;
 pub struct Nasm64Backend {}
 
 impl Backend for Nasm64Backend {
+    fn fun_num_greater(&self) -> &'static str {
+        todo!()
+    }
+
     fn fun_logical_not(&self) -> &'static str {
         todo!()
     }

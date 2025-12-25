@@ -20,6 +20,10 @@ use crate::backends::Backend;
 pub struct C99Backend {}
 
 impl Backend for C99Backend {
+    fn fun_num_greater(&self) -> &'static str {
+        "num_greater(); "
+    }
+
     fn fun_logical_not(&self) -> &'static str {
         "logical_not(); "
     }

@@ -126,6 +126,12 @@ inline static void logical_or() {
   dryft_push(a || b);
 }
 
+inline static void num_greater() {
+  size_t b = dryft_pop();
+  size_t a = dryft_pop();
+  dryft_push(a > b);
+}
+
 void dryft_main() {
   fun_main();
 }
