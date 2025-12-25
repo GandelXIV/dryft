@@ -20,6 +20,10 @@ use crate::backends::Backend;
 pub struct C99Backend {}
 
 impl Backend for C99Backend {
+    fn fun_logical_not(&self) -> &'static str {
+        "logical_not(); "
+    }
+
     fn create_then_condition(&self, body: String) -> String {
         format!("if (dryft_pop()) {{\n\t{body}\n}}")
     }

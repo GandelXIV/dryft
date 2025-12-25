@@ -109,6 +109,11 @@ inline static void simple_non_equality() {
   dryft_push(a != b);
 }
 
+inline static void logical_not() {
+  size_t a = dryft_pop();
+  dryft_push(! a);
+}
+
 void dryft_main() {
   fun_main();
 }

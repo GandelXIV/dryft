@@ -1,5 +1,4 @@
 include std/io
 
 act main
-	"Hello, World!\n" prints
-:act
+	"Hello, World!\n" prints ;

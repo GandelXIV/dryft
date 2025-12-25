@@ -40,6 +40,8 @@ pub trait Backend {
     fn fun_drop(&self) -> &'static str;
     fn fun_swap(&self) -> &'static str;
 
+    fn fun_logical_not(&self) -> &'static str;
+
     fn create_then_condition(&self, body: String) -> String;
 }
 
@@ -54,6 +56,10 @@ pub fn select(name: &str) -> Box<dyn Backend> {
 pub struct MockBackend {}
 
 impl Backend for MockBackend {
+    fn fun_logical_not(&self) -> &'static str {
+        ""
+    }
+
     fn create_then_condition(&self, body: String) -> String {
         "".to_string()
     }
