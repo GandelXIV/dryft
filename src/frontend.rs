@@ -325,6 +325,8 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 		"equals?" => add_builtin!(fun_simple_equality),
 		"nequals?" => add_builtin!(fun_simple_non_equality),
         "not" => add_builtin!(fun_logical_not),
+        "either?" => add_builtin!(fun_logical_or),
+        "both?" => add_builtin!(fun_logical_and),
 
 		word => println!("DRYFTERR - Unknown token '{}'", word),
 	}

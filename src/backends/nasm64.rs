@@ -24,6 +24,14 @@ impl Backend for Nasm64Backend {
         todo!()
     }
 
+    fn fun_logical_and(&self) -> &'static str {
+        todo!()
+    }
+
+    fn fun_logical_or(&self) -> &'static str {
+        todo!()
+    }
+
     fn create_then_condition(&self, body: String) -> String {
         todo!()
     }

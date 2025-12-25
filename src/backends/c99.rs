@@ -24,6 +24,14 @@ impl Backend for C99Backend {
         "logical_not(); "
     }
 
+    fn fun_logical_and(&self) -> &'static str {
+        "logical_and(); "
+    }
+
+    fn fun_logical_or(&self) -> &'static str {
+        "logical_or(); "
+    }
+
     fn create_then_condition(&self, body: String) -> String {
         format!("if (dryft_pop()) {{\n\t{body}\n}}")
     }

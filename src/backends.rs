@@ -41,6 +41,9 @@ pub trait Backend {
     fn fun_swap(&self) -> &'static str;
 
     fn fun_logical_not(&self) -> &'static str;
+    fn fun_logical_and(&self) -> &'static str;
+    fn fun_logical_or(&self) -> &'static str;
+
 
     fn create_then_condition(&self, body: String) -> String;
 }
@@ -57,6 +60,14 @@ pub struct MockBackend {}
 
 impl Backend for MockBackend {
     fn fun_logical_not(&self) -> &'static str {
+        ""
+    }
+
+    fn fun_logical_and(&self) -> &'static str {
+        ""
+    }
+
+    fn fun_logical_or(&self) -> &'static str {
         ""
     }
 

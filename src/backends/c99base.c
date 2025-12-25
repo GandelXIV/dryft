@@ -114,6 +114,18 @@ inline static void logical_not() {
   dryft_push(! a);
 }
 
+inline static void logical_and() {
+  size_t b = dryft_pop();
+  size_t a = dryft_pop();
+  dryft_push(a && b);
+}
+
+inline static void logical_or() {
+  size_t b = dryft_pop();
+  size_t a = dryft_pop();
+  dryft_push(a || b);
+}
+
 void dryft_main() {
   fun_main();
 }
