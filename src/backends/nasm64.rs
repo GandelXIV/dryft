@@ -25,6 +25,10 @@ use crate::backends::Backend;
 pub struct Nasm64Backend {}
 
 impl Backend for Nasm64Backend {
+    fn loop_break(&self) -> String {
+        todo!()
+    }
+
     fn fun_num_greater(&self) -> &'static str {
         todo!()
     }
@@ -46,6 +50,10 @@ impl Backend for Nasm64Backend {
     }
 
     fn create_else_condition(&self, body: String) -> String {
+        todo!()
+    }
+
+    fn create_loop_block(&self, body: String) -> String {
         todo!()
     }
 

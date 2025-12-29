@@ -20,6 +20,11 @@ use crate::backends::Backend;
 pub struct C99Backend {}
 
 impl Backend for C99Backend {
+
+    fn loop_break(&self) -> String {
+        "break;".to_string()
+    }
+
     fn fun_num_greater(&self) -> &'static str {
         "num_greater(); "
     }
@@ -42,6 +47,10 @@ impl Backend for C99Backend {
 
     fn create_else_condition(&self, body: String) -> String {
         format!("if (!last_condition) {{\n\t{body}\n}}")
+    }
+
+    fn create_loop_block(&self, body: String) -> String {
+        format!("for (;;) {{\n\t{body}\n}}")
     }
 
     fn complete(&self, compiled: &str) -> String {

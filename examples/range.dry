@@ -1,0 +1,10 @@
+include std/io
+
+act main
+	0 loop
+		copy 10 equals? then break ;
+		copy printi 
+		"\n" prints
+		1 +
+	:loop
+:act

@@ -32,9 +32,8 @@ enum DefinitionTypes {
     Then,
     Else,
     Include,
-    Negative, // purely comparative for compiler purposes
-
     Loop,
+    Negative, // purely comparative for compiler purposes
 }
 
 pub struct CompileState {
@@ -203,6 +202,14 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         };
     }
 
+    macro_rules! add_loop_block {
+        () => {
+            let body = cs.bodystack.pop().unwrap();
+
+            cs.add2body(&backend.create_loop_block(body));
+        };
+    }
+
     macro_rules! add_builtin {
         ($prop:ident) => {{
             cs.add2body(backend.$prop())
@@ -304,6 +311,20 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             add_else_condition!();
         }
 
+        "loop" | "loop:" => {
+            cs.defnstack.push(DefinitionTypes::Loop);
+            cs.bodystack.push("".into())
+        }
+
+        ":loop" => {
+            check_terminator!(Loop);
+            add_loop_block!();
+        }
+
+        "break" => {
+            cs.add2body(&backend.loop_break());
+        }
+
         ";" | "end" => {
             match cs.defnstack.pop().expect("DRYFTERR - Misplaced ;") {
                 // keep {} notation instead of , for the macros to work
@@ -318,6 +339,9 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
                 }
                 DefinitionTypes::Else => {
                     add_else_condition!();
+                }
+                DefinitionTypes::Loop => {
+                    add_loop_block!();
                 }
                 _ => todo!(),
             }

@@ -1,0 +1,8 @@
+include std/io
+
+act main
+	15 17 greater?
+	then "You may enter! \n" ;
+	else "You cant :( \n" ;
+	prints
+:act

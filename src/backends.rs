@@ -48,7 +48,8 @@ pub trait Backend {
 
     fn create_then_condition(&self, body: String) -> String;
     fn create_else_condition(&self, body: String) -> String;
-
+    fn create_loop_block(&self, body: String) -> String;
+    fn loop_break(&self) -> String;
 }
 
 pub fn select(name: &str) -> Box<dyn Backend> {
@@ -62,7 +63,15 @@ pub fn select(name: &str) -> Box<dyn Backend> {
 pub struct MockBackend {}
 
 impl Backend for MockBackend {
-    
+
+    fn loop_break(&self) -> String {
+        "".to_string()
+    }
+
+    fn create_loop_block(&self, body: String) -> String {
+        "".to_string()
+    }
+
     fn create_else_condition(&self, body: String) -> String {
         "".to_string()
     }
