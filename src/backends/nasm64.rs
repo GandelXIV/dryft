@@ -15,6 +15,11 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+
+// last working commit: 009e79bc974da89b12e591e17a35e9e99c8fe759
+// TODO: fix all todo!() macros
+// TODO: fix stdlib functions not working when linked in?
+
 use crate::backends::Backend;
 
 pub struct Nasm64Backend {}

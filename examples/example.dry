@@ -1,5 +1,6 @@
 # Most of this is subject to change, this file serves as a testing ground for current features #
 include std/io
+include core/const
 
 fun inc 1 + ;
 
@@ -12,8 +13,8 @@ fun quadra
 
 # actions are functions that may have side effects #
 # calling an action from inside a function is illegal #
-act nl "\n" prints ;
-act space " " prints ;
+act nl STR_NEWLINE prints ;
+act space STR_SPACE prints ;
 
 # you can link-in external symbols #
 # note that using the FFI in this way is potentially unsafe #

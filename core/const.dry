@@ -1,0 +1,4 @@
+fun TRUE 1 ;
+fun FALSE 0 ;
+fun STR_NEWLINE "\n" ;
+fun STR_SPACE " " ;
