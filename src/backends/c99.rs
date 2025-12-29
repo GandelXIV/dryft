@@ -37,7 +37,11 @@ impl Backend for C99Backend {
     }
 
     fn create_then_condition(&self, body: String) -> String {
-        format!("if (dryft_pop()) {{\n\t{body}\n}}")
+        format!("if (dryft_pop()) {{\n\tlast_condition = true;\n{body}\n}} else {{\t\nlast_condition = false;\n}}")
+    }
+
+    fn create_else_condition(&self, body: String) -> String {
+        format!("if (!last_condition) {{\n\t{body}\n}}")
     }
 
     fn complete(&self, compiled: &str) -> String {

@@ -17,11 +17,13 @@
 
 #include <stdio.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 #define STACK_SIZE 1000
 
 size_t stack [STACK_SIZE];
 size_t* sptr = stack;
+int last_condition = false;
 
 extern void dryft_push(size_t x) {
   *sptr = x;

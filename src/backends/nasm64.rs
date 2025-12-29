@@ -45,6 +45,10 @@ impl Backend for Nasm64Backend {
         todo!()
     }
 
+    fn create_else_condition(&self, body: String) -> String {
+        todo!()
+    }
+
     fn complete(&self, compiled: &str) -> String {
         let mut base = include_str!("nasm64base.asm").to_string();
         base.push_str(compiled);

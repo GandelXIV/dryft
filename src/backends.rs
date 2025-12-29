@@ -47,6 +47,8 @@ pub trait Backend {
     fn fun_num_greater(&self) -> &'static str;
 
     fn create_then_condition(&self, body: String) -> String;
+    fn create_else_condition(&self, body: String) -> String;
+
 }
 
 pub fn select(name: &str) -> Box<dyn Backend> {
@@ -60,6 +62,11 @@ pub fn select(name: &str) -> Box<dyn Backend> {
 pub struct MockBackend {}
 
 impl Backend for MockBackend {
+    
+    fn create_else_condition(&self, body: String) -> String {
+        "".to_string()
+    }
+
     fn fun_num_greater(&self) -> &'static str {
         ""
     }

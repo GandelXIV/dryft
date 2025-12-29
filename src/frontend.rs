@@ -30,6 +30,7 @@ enum DefinitionTypes {
     Action,
     Linkin,
     Then,
+    Else,
     Include,
     Negative, // purely comparative for compiler purposes
 
@@ -194,6 +195,14 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         };
     }
 
+    macro_rules! add_else_condition {
+        () => {
+            let body = cs.bodystack.pop().unwrap();
+
+            cs.add2body(&backend.create_else_condition(body));
+        };
+    }
+
     macro_rules! add_builtin {
         ($prop:ident) => {{
             cs.add2body(backend.$prop())
@@ -285,6 +294,16 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             add_then_condition!();
         }
 
+        "else" | "else:" => {
+            cs.defnstack.push(DefinitionTypes::Else);
+            cs.bodystack.push("".into());
+        }
+
+        ":else" => {
+            check_terminator!(Else);
+            add_else_condition!();
+        }
+
         ";" | "end" => {
             match cs.defnstack.pop().expect("DRYFTERR - Misplaced ;") {
                 // keep {} notation instead of , for the macros to work
@@ -296,6 +315,9 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
                 }
                 DefinitionTypes::Then => {
                     add_then_condition!();
+                }
+                DefinitionTypes::Else => {
+                    add_else_condition!();
                 }
                 _ => todo!(),
             }
