@@ -94,7 +94,7 @@ impl CompileState {
             }
         }
         return false;
-    } 
+    }
 }
 
 pub fn compile(backend: &mut Box<dyn Backend>, code: &str) -> CompileState {
@@ -283,20 +283,26 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         }
 
         v if *cs.defnstack.last().unwrap_or(&DefinitionTypes::Negative)
-            == DefinitionTypes::Variable => 
+            == DefinitionTypes::Variable =>
         {
             cs.defnstack.pop();
             let mut vname = v;
 
-            if cs.functions.contains_key(vname) || cs.actions.contains_key(vname) || cs.variable_in_scope(vname) {
+            if cs.functions.contains_key(vname)
+                || cs.actions.contains_key(vname)
+                || cs.variable_in_scope(vname)
+            {
                 panic!("DRYFTERR - cant define variable, symbol {vname} is already taken")
             }
 
-            cs.varscopes.last_mut().expect("DRYFTERR - no scope to define variable in").insert(vname.to_string());
+            cs.varscopes
+                .last_mut()
+                .expect("DRYFTERR - no scope to define variable in")
+                .insert(vname.to_string());
             cs.add2body(&backend.create_variable(vname));
         }
 
-        "fun:" | "fun" => { 
+        "fun:" | "fun" => {
             new_definition!(Function);
             cs.varscopes.push(HashSet::new());
         }
