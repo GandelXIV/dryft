@@ -52,13 +52,12 @@ TRUE then: TRUE then: "\nnested conditionals work\n" prints :then :then
 	then: "the same\n" prints ;
 	else: "not same\n" prints ;
 
-1 loop:
-	copy 5 equals? then: break ;
-	copy printi space
-	1 +
+10 var max
+0 var i
+loop:
+	i max equals? then: break ;
+	space i printi
+	i 1 + i!
 :loop nl
-
-5 var five
-five printi nl
 
 :act

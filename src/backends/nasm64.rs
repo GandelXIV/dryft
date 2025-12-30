@@ -24,10 +24,14 @@ use crate::backends::Backend;
 pub struct Nasm64Backend {}
 
 impl Backend for Nasm64Backend {
+    fn write_variable(&self, name: &str) -> String {
+        todo!()
+    }
+
     fn read_variable(&self, name: &str) -> String {
         todo!()
     }
-    
+
     fn create_variable(&self, name: &str) -> String {
         todo!()
     }

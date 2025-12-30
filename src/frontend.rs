@@ -288,7 +288,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.defnstack.pop();
             let mut vname = v;
 
-            if cs.functions.contains_key(vname) || cs.actions.contains_key(vname) || cs.variable_in_scope() {
+            if cs.functions.contains_key(vname) || cs.actions.contains_key(vname) || cs.variable_in_scope(vname) {
                 panic!("DRYFTERR - cant define variable, symbol {vname} is already taken")
             }
 
@@ -423,6 +423,14 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         }
 
         num if regexint.is_match(num) => cs.add2body(&backend.push_integer(num)),
+
+        setvar if setvar.chars().last().unwrap() == '!' => {
+            let vname = setvar.strip_suffix('!').unwrap();
+            if !cs.variable_in_scope(vname) {
+                panic!("DRYFTERR - Invalid write to variable {vname}, not found")
+            }
+            cs.add2body(&backend.write_variable(vname));
+        }
 
         "+" => add_builtin!(fun_add),
         "-" => add_builtin!(fun_sub),

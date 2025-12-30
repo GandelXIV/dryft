@@ -52,6 +52,7 @@ pub trait Backend {
     fn loop_break(&self) -> String;
     fn create_variable(&self, name: &str) -> String;
     fn read_variable(&self, name: &str) -> String;
+    fn write_variable(&self, name: &str) -> String;
 }
 
 pub fn select(name: &str) -> Box<dyn Backend> {
@@ -65,6 +66,10 @@ pub fn select(name: &str) -> Box<dyn Backend> {
 pub struct MockBackend {}
 
 impl Backend for MockBackend {
+    fn write_variable(&self, name: &str) -> String {
+        "".to_string()
+    }
+
     fn read_variable(&self, name: &str) -> String {
         "".to_string()
     }
