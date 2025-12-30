@@ -288,7 +288,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.defnstack.pop();
             let mut vname = v;
 
-            if cs.functions.contains_key(vname) || cs.actions.contains_key(vname) {
+            if cs.functions.contains_key(vname) || cs.actions.contains_key(vname) || cs.variable_in_scope() {
                 panic!("DRYFTERR - cant define variable, symbol {vname} is already taken")
             }
 
