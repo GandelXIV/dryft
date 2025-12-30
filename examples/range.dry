@@ -8,3 +8,14 @@ act main
 		1 +
 	:loop
 :act
+
+fun range (Int -> List)
+	var max
+	0 var i
+	newlist var ls
+	loop
+		i max equals? then break ;
+		$newlist i 1 + newlist! 
+		i 1 + i!
+	:loop
+:fun

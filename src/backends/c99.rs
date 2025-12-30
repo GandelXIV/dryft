@@ -20,6 +20,13 @@ use crate::backends::Backend;
 pub struct C99Backend {}
 
 impl Backend for C99Backend {
+    fn read_variable(&self, name: &str) -> String {
+        format!("dryft_push(var_{name}); ")
+    }
+
+    fn create_variable(&self, name: &str) -> String {
+        format!("size_t var_{name} = dryft_pop(); ")
+    }
 
     fn loop_break(&self) -> String {
         "break;".to_string()

@@ -46,10 +46,19 @@ act main
 
 10 10 + 20 equals? then: "equal!" prints ;
 
-1 then: 1 then: "\nnested conditionals work\n" prints :then :then
+TRUE then: TRUE then: "\nnested conditionals work\n" prints :then :then
 
 5 4 equals? 
 	then: "the same\n" prints ;
-	else: "not same\n" prints ; 
+	else: "not same\n" prints ;
+
+1 loop:
+	copy 5 equals? then: break ;
+	copy printi space
+	1 +
+:loop nl
+
+5 var five
+five printi nl
 
 :act

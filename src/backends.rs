@@ -50,6 +50,8 @@ pub trait Backend {
     fn create_else_condition(&self, body: String) -> String;
     fn create_loop_block(&self, body: String) -> String;
     fn loop_break(&self) -> String;
+    fn create_variable(&self, name: &str) -> String;
+    fn read_variable(&self, name: &str) -> String;
 }
 
 pub fn select(name: &str) -> Box<dyn Backend> {
@@ -63,6 +65,13 @@ pub fn select(name: &str) -> Box<dyn Backend> {
 pub struct MockBackend {}
 
 impl Backend for MockBackend {
+    fn read_variable(&self, name: &str) -> String {
+        "".to_string()
+    }
+
+    fn create_variable(&self, name: &str) -> String {
+        "".to_string()
+    }
 
     fn loop_break(&self) -> String {
         "".to_string()

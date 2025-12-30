@@ -19,7 +19,7 @@ use crate::backends::c99::C99Backend;
 use crate::backends::Backend;
 use crate::backends::MockBackend;
 use regex::Regex;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use strum_macros::IntoStaticStr;
@@ -33,6 +33,7 @@ enum DefinitionTypes {
     Else,
     Include,
     Loop,
+    Variable,
     Negative, // purely comparative for compiler purposes
 }
 
@@ -48,6 +49,7 @@ pub struct CompileState {
     pub defnstack: Vec<DefinitionTypes>,
     pub metastack: Vec<Vec<String>>,
     pub bodystack: Vec<String>,
+    pub varscopes: Vec<HashSet<String>>,
 
     pub iscomment: bool,
     pub isstring: bool,
@@ -67,6 +69,7 @@ impl CompileState {
             defnstack: vec![],
             metastack: vec![],
             bodystack: vec![String::new()],
+            varscopes: vec![HashSet::new()],
             iscomment: false,
             isstring: false,
             newstring: String::new(),
@@ -83,6 +86,15 @@ impl CompileState {
             panic!("DRYFTERR - Can not call actions from inside a function");
         }
     }
+
+    fn variable_in_scope(&self, vname: &str) -> bool {
+        for scope in self.varscopes.iter() {
+            if scope.contains(vname) {
+                return true;
+            }
+        }
+        return false;
+    } 
 }
 
 pub fn compile(backend: &mut Box<dyn Backend>, code: &str) -> CompileState {
@@ -165,6 +177,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
                 panic!("DRYFTERR - main must be defined as an action");
             }
 
+            cs.varscopes.pop();
             cs.functions.insert(fname.clone(), body.clone());
 
             let f = backend.create_function(fname.as_ref(), body);
@@ -179,6 +192,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
             let aname = meta.get(0).expect("DRYFTERR - No function name provided");
 
+            cs.varscopes.pop();
             cs.actions.insert(aname.clone(), body.clone());
 
             let f = backend.create_function(aname.as_ref(), body);
@@ -189,6 +203,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
     macro_rules! add_then_condition {
         () => {
             let body = cs.bodystack.pop().unwrap();
+            cs.varscopes.pop();
 
             cs.add2body(&backend.create_then_condition(body));
         };
@@ -197,6 +212,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
     macro_rules! add_else_condition {
         () => {
             let body = cs.bodystack.pop().unwrap();
+            cs.varscopes.pop();
 
             cs.add2body(&backend.create_else_condition(body));
         };
@@ -205,6 +221,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
     macro_rules! add_loop_block {
         () => {
             let body = cs.bodystack.pop().unwrap();
+            cs.varscopes.pop();
 
             cs.add2body(&backend.create_loop_block(body));
         };
@@ -265,15 +282,33 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             );
         }
 
-        "fun:" | "fun" => new_definition!(Function),
+        v if *cs.defnstack.last().unwrap_or(&DefinitionTypes::Negative)
+            == DefinitionTypes::Variable => 
+        {
+            cs.defnstack.pop();
+            let mut vname = v;
 
-        ";fun" | "endfun" | ":fun" => {
+            if cs.functions.contains_key(vname) || cs.actions.contains_key(vname) {
+                panic!("DRYFTERR - cant define variable, symbol {vname} is already taken")
+            }
+
+            cs.varscopes.last_mut().expect("DRYFTERR - no scope to define variable in").insert(vname.to_string());
+            cs.add2body(&backend.create_variable(vname));
+        }
+
+        "fun:" | "fun" => { 
+            new_definition!(Function);
+            cs.varscopes.push(HashSet::new());
+        }
+
+        ":fun" => {
             check_terminator!(Function);
             add_function!();
         }
 
         "act:" | "act" => {
             new_definition!(Action);
+            cs.varscopes.push(HashSet::new());
         }
 
         ":act" => {
@@ -294,6 +329,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         "then" | "then:" => {
             cs.defnstack.push(DefinitionTypes::Then);
             cs.bodystack.push("".into());
+            cs.varscopes.push(HashSet::new());
         }
 
         ":then" => {
@@ -304,6 +340,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         "else" | "else:" => {
             cs.defnstack.push(DefinitionTypes::Else);
             cs.bodystack.push("".into());
+            cs.varscopes.push(HashSet::new());
         }
 
         ":else" => {
@@ -319,10 +356,15 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         ":loop" => {
             check_terminator!(Loop);
             add_loop_block!();
+            cs.varscopes.push(HashSet::new());
         }
 
         "break" => {
             cs.add2body(&backend.loop_break());
+        }
+
+        "var" => {
+            cs.defnstack.push(DefinitionTypes::Variable);
         }
 
         ";" | "end" => {
@@ -374,6 +416,10 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         act if cs.actions.contains_key(act) => {
             cs.before_action();
             cs.add2body(&backend.user_function(act));
+        }
+
+        var if cs.variable_in_scope(var) => {
+            cs.add2body(&backend.read_variable(var));
         }
 
         num if regexint.is_match(num) => cs.add2body(&backend.push_integer(num)),

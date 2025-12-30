@@ -22,6 +22,8 @@ Hello World
 equal!
 nested conditionals work
 not same
+1 2 3 4 
+5
 """[1:] # remove blank line
 
 diff = difflib.unified_diff(
