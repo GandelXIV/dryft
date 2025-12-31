@@ -487,7 +487,7 @@ mod tests {
     #[test]
     fn function_compilation() {
         let mut backend: Box<dyn Backend> = Box::new(C99Backend {});
-        let mut cs = compile(&mut backend, "fun: sum3 + + ;fun");
+        let mut cs = compile(&mut backend, "fun: sum3 + + :fun");
 
         assert_eq!(
             cs.out.unwrap(),
