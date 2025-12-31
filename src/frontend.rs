@@ -456,9 +456,9 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
 #[cfg(test)]
 mod tests {
-    use crate::backends::MockBackend;
-    use crate::backends::c99::C99Backend;
     use super::*;
+    use crate::backends::c99::C99Backend;
+    use crate::backends::MockBackend;
 
     fn make_strings(v: Vec<&str>) -> Vec<String> {
         v.into_iter().map(String::from).collect()

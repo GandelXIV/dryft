@@ -15,7 +15,7 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-use clap::{Parser};
+use clap::Parser;
 use std::env;
 use std::fs;
 use std::io;
@@ -147,7 +147,7 @@ struct TargetDesc {
 #[derive(Deserialize)]
 struct TargetSpec {
     //dependencies: Vec<String>,
-    intermediate: PathBuf,     // file to write dryftc output to
+    intermediate: PathBuf, // file to write dryftc output to
     assemble: String, // command describing how to use an external compiler to finalize compilation.
     link: String,
     interpret: Option<String>, // command to run the final product. If none, use default system execute function (TODO)
