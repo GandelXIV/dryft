@@ -15,7 +15,7 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-use clap::{Parser, ValueEnum};
+use clap::{Parser};
 use std::env;
 use std::fs;
 use std::io;
@@ -29,13 +29,8 @@ use toml;
 pub mod backends;
 pub mod frontend;
 
-use backends::c99::C99Backend;
-use backends::Backend;
-
-type DefaultBackend = C99Backend;
-
 fn repl(targetspec: TargetSpec) {
-    // temporary disable because of how stupidly the repl pastes code into main directly
+    // temporary disable because of how the repl pastes code into main directly
     if targetspec.backend == "NASM64" {
         panic!("NASM64 unsupported for repl currently");
     }
@@ -66,7 +61,7 @@ fn repl(targetspec: TargetSpec) {
             ".exit" | ".quit" => break,
             _ => {
                 let src = format!("include std/io act: main {} ;", input);
-                let mut backend = crate::backends::select(&targetspec.backend);
+                let backend = crate::backends::select(&targetspec.backend);
                 fs::write(
                     &targetspec.intermediate,
                     frontend::compile_full(backend, &src),
@@ -96,7 +91,7 @@ fn build_file(inp: &Path, out: &Path, backend_name: &str) {
     if src.is_empty() {
         println!("Nothing to compile :/");
     } else {
-        let mut backend = crate::backends::select(backend_name);
+        let backend = crate::backends::select(backend_name);
         fs::write(out, frontend::compile_full(backend, src)).unwrap();
     }
 }
@@ -151,12 +146,11 @@ struct TargetDesc {
 // platform independent
 #[derive(Deserialize)]
 struct TargetSpec {
-    dependencies: Vec<String>, // binaries used by the below
+    //dependencies: Vec<String>,
     intermediate: PathBuf,     // file to write dryftc output to
     assemble: String, // command describing how to use an external compiler to finalize compilation.
     link: String,
     interpret: Option<String>, // command to run the final product. If none, use default system execute function (TODO)
-    linkstep: Option<String>,
     backend: String,
     stdlib: String,
 }

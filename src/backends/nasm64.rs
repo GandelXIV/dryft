@@ -24,15 +24,15 @@ use crate::backends::Backend;
 pub struct Nasm64Backend {}
 
 impl Backend for Nasm64Backend {
-    fn write_variable(&self, name: &str) -> String {
+    fn write_variable(&self, _name: &str) -> String {
         todo!()
     }
 
-    fn read_variable(&self, name: &str) -> String {
+    fn read_variable(&self, _name: &str) -> String {
         todo!()
     }
 
-    fn create_variable(&self, name: &str) -> String {
+    fn create_variable(&self, _name: &str) -> String {
         todo!()
     }
 
@@ -56,15 +56,15 @@ impl Backend for Nasm64Backend {
         todo!()
     }
 
-    fn create_then_condition(&self, body: String) -> String {
+    fn create_then_condition(&self, _body: String) -> String {
         todo!()
     }
 
-    fn create_else_condition(&self, body: String) -> String {
+    fn create_else_condition(&self, _body: String) -> String {
         todo!()
     }
 
-    fn create_loop_block(&self, body: String) -> String {
+    fn create_loop_block(&self, _body: String) -> String {
         todo!()
     }
 
@@ -130,7 +130,7 @@ impl Backend for Nasm64Backend {
         format!("\tmpush {i}\n")
     }
 
-    fn push_string(&self, s: &str) -> String {
+    fn push_string(&self, _s: &str) -> String {
         todo!()
     }
 }

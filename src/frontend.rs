@@ -15,17 +15,14 @@
 * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-use crate::backends::c99::C99Backend;
 use crate::backends::Backend;
-use crate::backends::MockBackend;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use std::fs;
-use std::path::{Path, PathBuf};
 use strum_macros::IntoStaticStr;
 
 #[derive(Debug, PartialEq, IntoStaticStr)]
-enum DefinitionTypes {
+pub enum DefinitionTypes {
     Function,
     Action,
     Linkin,
@@ -286,7 +283,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             == DefinitionTypes::Variable =>
         {
             cs.defnstack.pop();
-            let mut vname = v;
+            let vname = v;
 
             if cs.functions.contains_key(vname)
                 || cs.actions.contains_key(vname)
@@ -395,7 +392,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             }
         }
 
-        mac if (false) => {} // future for macro expansion
+        _mac if (false) => {} // future for macro expansion
 
         // TODO: optimize this into an argcount stack, which decrements top on each metastack push
         // TODO ALT basically all of these just grab x args, but maybe in the future they will also perform immediate work with them, so who knows actually?
@@ -457,13 +454,15 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
     }
 }
 
-fn make_strings(v: Vec<&str>) -> Vec<String> {
-    v.into_iter().map(String::from).collect()
-}
-
 #[cfg(test)]
 mod tests {
+    use crate::backends::MockBackend;
+    use crate::backends::c99::C99Backend;
     use super::*;
+
+    fn make_strings(v: Vec<&str>) -> Vec<String> {
+        v.into_iter().map(String::from).collect()
+    }
 
     #[test]
     fn simple_parse() {

@@ -66,15 +66,15 @@ pub fn select(name: &str) -> Box<dyn Backend> {
 pub struct MockBackend {}
 
 impl Backend for MockBackend {
-    fn write_variable(&self, name: &str) -> String {
+    fn write_variable(&self, _name: &str) -> String {
         "".to_string()
     }
 
-    fn read_variable(&self, name: &str) -> String {
+    fn read_variable(&self, _name: &str) -> String {
         "".to_string()
     }
 
-    fn create_variable(&self, name: &str) -> String {
+    fn create_variable(&self, _name: &str) -> String {
         "".to_string()
     }
 
@@ -82,11 +82,11 @@ impl Backend for MockBackend {
         "".to_string()
     }
 
-    fn create_loop_block(&self, body: String) -> String {
+    fn create_loop_block(&self, _body: String) -> String {
         "".to_string()
     }
 
-    fn create_else_condition(&self, body: String) -> String {
+    fn create_else_condition(&self, _body: String) -> String {
         "".to_string()
     }
 
@@ -106,7 +106,7 @@ impl Backend for MockBackend {
         ""
     }
 
-    fn create_then_condition(&self, body: String) -> String {
+    fn create_then_condition(&self, _body: String) -> String {
         "".to_string()
     }
 
@@ -122,7 +122,7 @@ impl Backend for MockBackend {
         ""
     }
 
-    fn linkin_function(&self, name: &str) -> String {
+    fn linkin_function(&self, _name: &str) -> String {
         "".to_string()
     }
 
@@ -158,19 +158,19 @@ impl Backend for MockBackend {
         ""
     }
 
-    fn create_function(&self, fname: &str, body: String) -> String {
+    fn create_function(&self, _fname: &str, _body: String) -> String {
         "".to_string()
     }
 
-    fn user_function(&self, fname: &str) -> String {
+    fn user_function(&self, _fname: &str) -> String {
         "".to_string()
     }
 
-    fn push_integer(&self, i: &str) -> String {
+    fn push_integer(&self, _i: &str) -> String {
         "".to_string()
     }
 
-    fn push_string(&self, s: &str) -> String {
+    fn push_string(&self, _s: &str) -> String {
         "".to_string()
     }
 }
