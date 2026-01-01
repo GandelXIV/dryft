@@ -67,9 +67,9 @@ fn repl(targetspec: TargetSpec) {
                     frontend::compile_full(backend, &src),
                 )
                 .unwrap();
-                stdlib(&targetspec.stdlib);
-                assemble(&targetspec.assemble);
-                link(&targetspec.link);
+                stdlib(&targetspec.stdlib.as_ref().unwrap_or(&"".to_string()));
+                assemble(&targetspec.assemble.as_ref().unwrap_or(&"".to_string()));
+                link(&targetspec.link.as_ref().unwrap_or(&"".to_string()));
                 interpret(
                     targetspec
                         .interpret
@@ -98,6 +98,7 @@ fn simple_print(x: &str) {
     io::stdout().flush().unwrap();
 }
 
+// compile the standard library
 fn stdlib(cmd: &str) {
     let (_, stderr) = bash(cmd);
     simple_print(&stderr);
@@ -109,6 +110,7 @@ fn assemble(cmd: &str) {
     simple_print(&stderr);
 }
 
+// link objects into final executable
 fn link(cmd: &str) {
     let (_, stderr) = bash(cmd);
     simple_print(&stderr);
@@ -145,12 +147,12 @@ struct TargetDesc {
 #[derive(Deserialize)]
 struct TargetSpec {
     //dependencies: Vec<String>,
-    intermediate: PathBuf, // file to write dryftc output to
-    assemble: String, // command describing how to use an external compiler to finalize compilation.
-    link: String,
-    interpret: Option<String>, // command to run the final product. If none, use default system execute function (TODO)
     backend: String,
-    stdlib: String,
+    intermediate: PathBuf, // file to write dryftc output to
+    assemble: Option<String>, // command describing how to use an external compiler to finalize compilation.
+    link: Option<String>,
+    interpret: Option<String>, // command to run the final product. If none, use default system execute function (TODO)
+    stdlib: Option<String>,
 }
 
 #[derive(Parser, Debug)]
@@ -216,11 +218,11 @@ fn main() {
 
     if let Some(f) = cli.inputfile {
         build_file(&f, &targetspec.intermediate, &targetspec.backend);
-        stdlib(&targetspec.stdlib);
+        stdlib(&targetspec.stdlib.unwrap_or("".to_string()));
         if !cli.assembly_only {
-            assemble(&targetspec.assemble).unwrap();
+            assemble(&targetspec.assemble.unwrap_or("".to_string()));
             if !cli.object_only {
-                link(&targetspec.link);
+                link(&targetspec.link.unwrap_or("".to_string()));
             }
         }
         if cli.is_run {
