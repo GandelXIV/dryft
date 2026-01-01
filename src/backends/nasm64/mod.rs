@@ -69,7 +69,7 @@ impl Backend for Nasm64Backend {
     }
 
     fn complete(&self, compiled: &str) -> String {
-        let mut base = include_str!("nasm64base.asm").to_string();
+        let mut base = include_str!("base.asm").to_string();
         base.push_str(compiled);
         base
     }

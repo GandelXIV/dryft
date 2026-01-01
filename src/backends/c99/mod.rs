@@ -65,7 +65,7 @@ impl Backend for C99Backend {
     }
 
     fn complete(&self, compiled: &str) -> String {
-        let mut cbase = include_str!("c99base.c").to_string();
+        let mut cbase = include_str!("base.c").to_string();
         cbase.push_str(compiled);
         cbase
     }

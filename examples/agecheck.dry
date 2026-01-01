@@ -1,7 +1,11 @@
 include std/io
 
+fun check
+	17 greater?
+:fun
+
 act main
-	15 17 greater?
+	20 check	
 	then "You may enter! \n" ;
 	else "You cant :( \n" ;
 	prints

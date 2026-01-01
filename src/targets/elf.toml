@@ -1,6 +1,5 @@
 [unix]
 backend = "NASM64"
-dependencies = [ "nasm", "gcc" ]
 intermediate = "build/ir.asm"
 stdlib = "gcc std/std.c -c -fPIE -o build/stdc.o"
 assemble = "nasm -f elf64 -o build/obj.o build/ir.asm"
