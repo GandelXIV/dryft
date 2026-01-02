@@ -74,23 +74,26 @@ impl CompileState {
         }
     }
 
+    // append codegen
     fn add2body(&mut self, s: &str) {
         self.bodystack.last_mut().unwrap().push_str(s)
     }
 
+    // checks that the action is not called inside any function scope
     fn before_action(&self) {
         if self.defnstack.contains(&DefinitionTypes::Function) {
             panic!("DRYFTERR - Can not call actions from inside a function");
         }
     }
 
+    // does the variable exist in scope? the actual location is handled by the backend
     fn variable_in_scope(&self, vname: &str) -> bool {
         for scope in self.varscopes.iter() {
             if scope.contains(vname) {
                 return true;
             }
         }
-        return false;
+        false
     }
 }
 
@@ -141,7 +144,7 @@ pub fn compile(backend: &mut Box<dyn Backend>, code: &str) -> CompileState {
     new_token!(); // last word may not be whitespace separated
     cs.out = Some(cs.bodystack.remove(0));
 
-    return cs;
+    cs
 }
 
 pub fn compile_full(mut backend: Box<dyn Backend>, code: &str) -> String {
@@ -427,7 +430,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
         num if regexint.is_match(num) => cs.add2body(&backend.push_integer(num)),
 
-        setvar if setvar.chars().last().unwrap() == '!' => {
+        setvar if setvar.ends_with('!') => {
             let vname = setvar.strip_suffix('!').unwrap();
             if !cs.variable_in_scope(vname) {
                 panic!("DRYFTERR - Invalid write to variable {vname}, not found")

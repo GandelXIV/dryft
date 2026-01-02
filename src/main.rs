@@ -24,7 +24,6 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use serde::Deserialize;
-use toml;
 
 pub mod backends;
 pub mod frontend;
@@ -67,9 +66,9 @@ fn repl(targetspec: TargetSpec) {
                     frontend::compile_full(backend, &src),
                 )
                 .unwrap();
-                stdlib(&targetspec.stdlib.as_ref().unwrap_or(&"".to_string()));
-                assemble(&targetspec.assemble.as_ref().unwrap_or(&"".to_string()));
-                link(&targetspec.link.as_ref().unwrap_or(&"".to_string()));
+                stdlib(targetspec.stdlib.as_ref().unwrap_or(&"".to_string()));
+                assemble(targetspec.assemble.as_ref().unwrap_or(&"".to_string()));
+                link(targetspec.link.as_ref().unwrap_or(&"".to_string()));
                 interpret(
                     targetspec
                         .interpret
@@ -148,7 +147,7 @@ struct TargetDesc {
 struct TargetSpec {
     //dependencies: Vec<String>,
     backend: String,
-    intermediate: PathBuf, // file to write dryftc output to
+    intermediate: PathBuf,    // file to write dryftc output to
     assemble: Option<String>, // command describing how to use an external compiler to finalize compilation.
     link: Option<String>,
     interpret: Option<String>, // command to run the final product. If none, use default system execute function (TODO)

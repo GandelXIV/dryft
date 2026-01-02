@@ -19,8 +19,10 @@ pub mod c99;
 pub mod nasm64;
 
 pub trait Backend {
+    // insert the locally compiled snipet into the full holistic-program (with all its dependencies)
     fn complete(&self, compiled: &str) -> String;
 
+    // any callable method is classified as this
     fn create_function(&self, fname: &str, body: String) -> String;
     fn push_integer(&self, i: &str) -> String;
     fn push_string(&self, s: &str) -> String;
