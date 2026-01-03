@@ -60,4 +60,9 @@ loop:
 	i 1 + i!
 :loop nl
 
+0 ifthen: "A" prints ;
+1 orthen: "B" prints ;
+0 orthen: "C" prints ;
+orelse: "D" prints ; nl
+
 :act

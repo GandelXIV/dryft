@@ -52,11 +52,15 @@ impl Backend for C99Backend {
         "logical_or(); "
     }
 
-    fn create_then_condition(&self, body: String) -> String {
+    fn create_if_then_condition(&self, body: String) -> String {
         format!("if (dryft_pop()) {{\n\tlast_condition = true;\n{body}\n}} else {{\t\nlast_condition = false;\n}}")
     }
 
-    fn create_else_condition(&self, body: String) -> String {
+    fn create_or_then_condition(&self, body: String) -> String {
+        format!("if (dryft_pop() && !last_condition) {{\n\tlast_condition = true;\n{body}\n}}")
+    }
+
+    fn create_or_else_condition(&self, body: String) -> String {
         format!("if (!last_condition) {{\n\t{body}\n}}")
     }
 

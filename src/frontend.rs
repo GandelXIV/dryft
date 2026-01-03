@@ -26,8 +26,9 @@ pub enum DefinitionTypes {
     Function,
     Action,
     Linkin,
-    Then,
-    Else,
+    IfThen,
+    OrThen,
+    OrElse,
     Include,
     Loop,
     Variable,
@@ -200,21 +201,31 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         };
     }
 
-    macro_rules! add_then_condition {
+    macro_rules! add_if_then_condition {
         () => {
             let body = cs.bodystack.pop().unwrap();
             cs.varscopes.pop();
 
-            cs.add2body(&backend.create_then_condition(body));
+            cs.add2body(&backend.create_if_then_condition(body));
         };
     }
 
-    macro_rules! add_else_condition {
+    macro_rules! add_or_then_condition {
+        () => {
+            println!("heb1hb");
+            let body = cs.bodystack.pop().unwrap();
+            cs.varscopes.pop();
+
+            cs.add2body(&backend.create_or_then_condition(body));
+        };
+    }
+
+    macro_rules! add_or_else_condition {
         () => {
             let body = cs.bodystack.pop().unwrap();
             cs.varscopes.pop();
 
-            cs.add2body(&backend.create_else_condition(body));
+            cs.add2body(&backend.create_or_else_condition(body));
         };
     }
 
@@ -333,25 +344,36 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         }
 
         "ifthen" | "ifthen:" => {
-            cs.defnstack.push(DefinitionTypes::Then);
+            cs.defnstack.push(DefinitionTypes::IfThen);
+            cs.bodystack.push("".into());
+            cs.varscopes.push(HashSet::new());
+        }
+
+        "orthen" | "orthen:" => {
+            cs.defnstack.push(DefinitionTypes::OrThen);
             cs.bodystack.push("".into());
             cs.varscopes.push(HashSet::new());
         }
 
         ":ifthen" => {
-            check_terminator!(Then);
-            add_then_condition!();
+            check_terminator!(IfThen);
+            add_if_then_condition!();
+        }
+
+        ":orthen" => {
+            check_terminator!(OrThen);
+            add_or_then_condition!();
         }
 
         "orelse" | "orelse:" => {
-            cs.defnstack.push(DefinitionTypes::Else);
+            cs.defnstack.push(DefinitionTypes::OrElse);
             cs.bodystack.push("".into());
             cs.varscopes.push(HashSet::new());
         }
 
         ":orelse" => {
-            check_terminator!(Else);
-            add_else_condition!();
+            check_terminator!(OrElse);
+            add_or_else_condition!();
         }
 
         "loop" | "loop:" => {
@@ -382,11 +404,14 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
                 DefinitionTypes::Action => {
                     add_action!();
                 }
-                DefinitionTypes::Then => {
-                    add_then_condition!();
+                DefinitionTypes::IfThen => {
+                    add_if_then_condition!();
                 }
-                DefinitionTypes::Else => {
-                    add_else_condition!();
+                DefinitionTypes::OrThen => {
+                    add_or_then_condition!();
+                }
+                DefinitionTypes::OrElse => {
+                    add_or_else_condition!();
                 }
                 DefinitionTypes::Loop => {
                     add_loop_block!();
