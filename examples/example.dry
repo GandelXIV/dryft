@@ -63,6 +63,6 @@ loop:
 0 ifthen: "A" prints ;
 1 orthen: "B" prints ;
 0 orthen: "C" prints ;
-orelse: "D" prints ; nl
+  orelse: "D" prints ; nl
 
 :act

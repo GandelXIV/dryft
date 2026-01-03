@@ -212,7 +212,6 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
     macro_rules! add_or_then_condition {
         () => {
-            println!("heb1hb");
             let body = cs.bodystack.pop().unwrap();
             cs.varscopes.pop();
 
