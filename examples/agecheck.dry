@@ -6,7 +6,7 @@ fun check
 
 act main
 	20 check	
-	then "You may enter! \n" ;
-	else "You cant :( \n" ;
+	ifthen "You may enter! \n" ;
+	orelse "You cant :( \n" ;
 	prints
 :act

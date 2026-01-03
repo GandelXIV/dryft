@@ -332,24 +332,24 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.defnstack.push(DefinitionTypes::Include);
         }
 
-        "then" | "then:" => {
+        "ifthen" | "ifthen:" => {
             cs.defnstack.push(DefinitionTypes::Then);
             cs.bodystack.push("".into());
             cs.varscopes.push(HashSet::new());
         }
 
-        ":then" => {
+        ":ifthen" => {
             check_terminator!(Then);
             add_then_condition!();
         }
 
-        "else" | "else:" => {
+        "orelse" | "orelse:" => {
             cs.defnstack.push(DefinitionTypes::Else);
             cs.bodystack.push("".into());
             cs.varscopes.push(HashSet::new());
         }
 
-        ":else" => {
+        ":orelse" => {
             check_terminator!(Else);
             add_else_condition!();
         }
