@@ -4,7 +4,7 @@ include core/const
 
 fun inc 1 + ;
 
-fun double 
+fun double
 	copy + ;
 
 fun quadra 

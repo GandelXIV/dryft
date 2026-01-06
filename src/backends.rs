@@ -117,7 +117,6 @@ impl Backend for MockBackend {
         "".to_string()
     }
 
-
     fn fun_simple_equality(&self) -> &'static str {
         ""
     }

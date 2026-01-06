@@ -54,6 +54,9 @@ pub struct CompileState {
     pub newstring: String,
 
     pub prepend: String,
+
+    pub linenumber: isize,
+    pub tokenumber: isize,
 }
 
 impl CompileState {
@@ -72,6 +75,8 @@ impl CompileState {
             isstring: false,
             newstring: String::new(),
             prepend: String::new(),
+            linenumber: 0,
+            tokenumber: 0,
         }
     }
 
@@ -83,7 +88,7 @@ impl CompileState {
     // checks that the action is not called inside any function scope
     fn before_action(&self) {
         if self.defnstack.contains(&DefinitionTypes::Function) {
-            panic!("DRYFTERR - Can not call actions from inside a function");
+            self.throw_error(&format!("Can not call actions from inside a function"));
         }
     }
 
@@ -96,6 +101,12 @@ impl CompileState {
         }
         false
     }
+
+    fn throw_error(&self, msg: &str) -> ! {
+        let line = self.linenumber;
+        let token = self.tokenumber; // token printing is broken when includes are used, figure out why TODO
+        panic!("[DRYFT ERROR] line {line}, word {token}: {msg}")
+    }
 }
 
 pub fn compile(backend: &mut Box<dyn Backend>, code: &str) -> CompileState {
@@ -104,6 +115,7 @@ pub fn compile(backend: &mut Box<dyn Backend>, code: &str) -> CompileState {
     macro_rules! new_token {
         () => {{
             if !cs.word.is_empty() {
+                cs.tokenumber += 1;
                 cs.log_tokens.push(cs.word.clone());
                 handle_token(backend, &mut cs);
                 cs.word = String::new();
@@ -120,6 +132,11 @@ pub fn compile(backend: &mut Box<dyn Backend>, code: &str) -> CompileState {
         }
 
         let letter = code.remove(0);
+
+        if letter == '\n' {
+            cs.linenumber += 1;
+            cs.tokenumber = 0;
+        }
 
         match letter {
             c if cs.iscomment => {
@@ -172,10 +189,10 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             let meta = cs.metastack.pop().unwrap();
             let body = cs.bodystack.pop().unwrap();
 
-            let fname = meta.get(0).expect("DRYFTERR - No function name provided");
+            let fname = meta.get(0).unwrap_or_else(|| cs.throw_error("No function name provided"));
 
             if fname == "main" {
-                panic!("DRYFTERR - main must be defined as an action");
+                cs.throw_error("main must be defined as an action")
             }
 
             cs.varscopes.pop();
@@ -191,7 +208,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             let meta = cs.metastack.pop().unwrap();
             let body = cs.bodystack.pop().unwrap();
 
-            let aname = meta.get(0).expect("DRYFTERR - No function name provided");
+            let aname = meta.get(0).unwrap_or_else(|| cs.throw_error("No function name provided"));
 
             cs.varscopes.pop();
             cs.actions.insert(aname.clone(), body.clone());
@@ -245,10 +262,14 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
     macro_rules! check_terminator {
         ($expected:ident) => {
-            if cs.defnstack.pop().expect("DRYFTERR - no block to end") != DefinitionTypes::$expected
+            if cs
+                .defnstack
+                .pop()
+                .unwrap_or_else(|| cs.throw_error("no block to end"))
+                != DefinitionTypes::$expected
             {
-                panic!(concat!(
-                    "DRYFTERR - Misplaced ",
+                cs.throw_error(concat!(
+                    "Misplaced ",
                     stringify!($expected),
                     " block ending"
                 ));
@@ -274,7 +295,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
                 match class.as_ref() {
                     "fun" => cs.functions.insert(mname.clone(), "LINKED IN".to_string()),
                     "act" => cs.actions.insert(mname.clone(), "LINKED IN".to_string()),
-                    other => panic!("DRYFTERR - Invalid link-in class {other}"),
+                    other => cs.throw_error(&format!("Invalid link-in class {other}")),
                 };
 
                 cs.add2body(&backend.linkin_function(&mname));
@@ -287,9 +308,9 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.defnstack.pop();
             let mut pat = String::from(f);
             pat.push_str(".dry");
-            cs.prepend.push_str(
-                &String::from_utf8(fs::read(&pat).expect("Could not locate include")).unwrap(),
-            );
+            let f = String::from_utf8(fs::read(&pat).expect("Could not locate include")).unwrap();
+            cs.prepend.push_str(&f);
+            cs.linenumber -= f.matches('\n').count() as isize;
         }
 
         v if *cs.defnstack.last().unwrap_or(&DefinitionTypes::Negative)
@@ -302,12 +323,12 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
                 || cs.actions.contains_key(vname)
                 || cs.variable_in_scope(vname)
             {
-                panic!("DRYFTERR - cant define variable, symbol {vname} is already taken")
+                cs.throw_error(&format!("cant define variable, symbol {vname} is already taken"))
             }
 
             cs.varscopes
                 .last_mut()
-                .expect("DRYFTERR - no scope to define variable in")
+                .unwrap()
                 .insert(vname.to_string());
             cs.add2body(&backend.create_variable(vname));
         }
@@ -395,7 +416,11 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         }
 
         ";" | "end" => {
-            match cs.defnstack.pop().expect("DRYFTERR - Misplaced ;") {
+            match cs
+                .defnstack
+                .pop()
+                .unwrap_or_else(|| cs.throw_error(" - Misplaced ;"))
+            {
                 // keep {} notation instead of , for the macros to work
                 DefinitionTypes::Function => {
                     add_function!();
@@ -425,14 +450,16 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         // TODO ALT basically all of these just grab x args, but maybe in the future they will also perform immediate work with them, so who knows actually?
         // TODO ALT just break this into a bunch of macro for ease of use & reading
         fname
-            if *cs.defnstack.last().unwrap() == DefinitionTypes::Function
+            if *cs.defnstack.last().unwrap_or(&DefinitionTypes::Negative)
+                == DefinitionTypes::Function
                 && cs.metastack.last().unwrap().is_empty() =>
         {
             cs.metastack.last_mut().unwrap().push(fname.into())
         }
 
         aname
-            if *cs.defnstack.last().unwrap() == DefinitionTypes::Action
+            if *cs.defnstack.last().unwrap_or(&DefinitionTypes::Negative)
+                == DefinitionTypes::Action
                 && cs.metastack.last().unwrap().is_empty() =>
         {
             cs.metastack.last_mut().unwrap().push(aname.into())
@@ -457,7 +484,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         setvar if setvar.ends_with('!') => {
             let vname = setvar.strip_suffix('!').unwrap();
             if !cs.variable_in_scope(vname) {
-                panic!("DRYFTERR - Invalid write to variable {vname}, not found")
+                cs.throw_error(&format!("Invalid write to variable {vname}, not found"))
             }
             cs.add2body(&backend.write_variable(vname));
         }
@@ -477,7 +504,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         "both?" => add_builtin!(fun_logical_and),
         "greater?" => add_builtin!(fun_num_greater),
 
-        word => println!("DRYFTERR - Unknown token '{}'", word),
+        word => cs.throw_error(&format!("Unknown token '{}'", word)),
     }
 }
 
