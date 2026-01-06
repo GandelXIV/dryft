@@ -1,6 +1,6 @@
 # Most of this is subject to change, this file serves as a testing ground for current features #
-include std/io
-include core/const
+include lib/std/io
+include lib/core/const
 
 fun inc 1 + ;
 

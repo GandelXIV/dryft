@@ -2,7 +2,7 @@
 backend = "C99"
 dependencies = [ "gcc" ]
 intermediate = "build/temp.c"
-stdlib = "gcc std/std.c -c -fPIE -o build/stdc.o"
+stdlib = "gcc lib/std/std.c -c -fPIE -o build/stdc.o"
 assemble = "gcc -c -o build/temp.o -w build/temp.c"
 link = "gcc build/temp.o build/stdc.o -o a.out"
 interpret = "./a.out"
