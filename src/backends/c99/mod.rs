@@ -20,6 +20,14 @@ use crate::backends::Backend;
 pub struct C99Backend {}
 
 impl Backend for C99Backend {
+    fn fun_num_less_than_or_equal(&self) -> &'static str {
+        "num_less_than_or_equal(); "
+    }
+
+    fn fun_num_less_than(&self) -> &'static str {
+        "num_less_than(); "
+    }
+
     fn fun_num_greater_or_equal(&self) -> &'static str {
         "num_greater_or_equal(); "
     }
