@@ -47,6 +47,7 @@ pub trait Backend {
     fn fun_logical_or(&self) -> &'static str;
 
     fn fun_num_greater(&self) -> &'static str;
+    fn fun_num_greater_or_equal(&self) -> &'static str;
 
     fn create_if_then_condition(&self, body: String) -> String;
     fn create_or_then_condition(&self, body: String) -> String;
@@ -69,6 +70,10 @@ pub fn select(name: &str) -> Box<dyn Backend> {
 pub struct MockBackend {}
 
 impl Backend for MockBackend {
+    fn fun_num_greater_or_equal(&self) -> &'static str {
+        ""
+    }
+
     fn write_variable(&self, _name: &str) -> String {
         "".to_string()
     }

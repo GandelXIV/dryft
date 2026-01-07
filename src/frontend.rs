@@ -502,7 +502,8 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         "not" => add_builtin!(fun_logical_not),
         "either?" => add_builtin!(fun_logical_or),
         "both?" => add_builtin!(fun_logical_and),
-        "greater?" => add_builtin!(fun_num_greater),
+        "greater?" | ">?" => add_builtin!(fun_num_greater),
+        ">=?" => add_builtin!(fun_num_greater_or_equal),
 
         word => cs.throw_error(&format!("Unknown token '{}'", word)),
     }

@@ -134,6 +134,12 @@ inline static void num_greater() {
   dryft_push(a > b);
 }
 
+inline static void num_greater_or_equal() {
+  size_t b = dryft_pop();
+  size_t a = dryft_pop();
+  dryft_push(a >= b);
+}
+
 void dryft_main() {
   fun_main();
 }

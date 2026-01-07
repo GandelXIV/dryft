@@ -24,6 +24,10 @@ use crate::backends::Backend;
 pub struct Nasm64Backend {}
 
 impl Backend for Nasm64Backend {
+    fn fun_num_greater_or_equal(&self) -> &'static str {
+        todo!()
+    }
+
     fn write_variable(&self, _name: &str) -> String {
         todo!()
     }
