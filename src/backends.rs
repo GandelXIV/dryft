@@ -59,6 +59,10 @@ pub trait Backend {
     fn create_variable(&self, name: &str) -> String;
     fn read_variable(&self, name: &str) -> String;
     fn write_variable(&self, name: &str) -> String;
+
+    fn create_conditional_statement(&self, body: String) -> String {
+        todo!()
+    }
 }
 
 pub fn select(name: &str) -> Box<dyn Backend> {

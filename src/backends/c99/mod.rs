@@ -20,6 +20,10 @@ use crate::backends::Backend;
 pub struct C99Backend {}
 
 impl Backend for C99Backend {
+    fn create_conditional_statement(&self, body: String) -> String {
+        format!(" if (dryft_pop()) {{ {body} }}")
+    }
+
     fn fun_num_less_than_or_equal(&self) -> &'static str {
         "num_less_than_or_equal(); "
     }

@@ -26,9 +26,13 @@ pub enum DefinitionTypes {
     Function,
     Action,
     Linkin,
+
+    Then,
+    // following 3 are gonna be deprecated
     IfThen,
     OrThen,
     OrElse,
+
     Include,
     Loop,
     Variable,
@@ -100,6 +104,18 @@ impl CompileState {
             }
         }
         false
+    }
+
+    fn grow_bodystack(&mut self) {
+        self.bodystack.push("".into())
+    }
+
+    fn grow_varscopes(&mut self) {
+        self.varscopes.push(HashSet::new())
+    }
+
+    fn grow_metastack(&mut self) {
+        self.metastack.push(vec![])
     }
 
     fn throw_error(&self, msg: &str) -> ! {
@@ -215,6 +231,15 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
             let f = backend.create_function(aname.as_ref(), body);
             cs.add2body(&f);
+        };
+    }
+
+    macro_rules! add_then_block {
+        () => {
+            let body = cs.bodystack.pop().unwrap();
+            cs.varscopes.pop();
+
+            cs.add2body(&backend.create_conditional_statement(body));
         };
     }
 
@@ -356,17 +381,28 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         // this keyword is funamentally unsafe, consider adding changing to unsafe_linkin or something like that
         "linkin" => {
             cs.defnstack.push(DefinitionTypes::Linkin);
-            cs.metastack.push(vec![]);
+            cs.grow_metastack();
         }
 
         "include" | "include:" => {
             cs.defnstack.push(DefinitionTypes::Include);
         }
 
+        "then" | "then:" => {
+            cs.defnstack.push(DefinitionTypes::Then);
+            cs.grow_bodystack();
+            cs.grow_varscopes();
+        }
+
+        ":then" => {
+            check_terminator!(Then);
+            add_then_block!();
+        }
+
         "ifthen" | "ifthen:" => {
             cs.defnstack.push(DefinitionTypes::IfThen);
-            cs.bodystack.push("".into());
-            cs.varscopes.push(HashSet::new());
+            cs.grow_bodystack();
+            cs.grow_varscopes();
         }
 
         "orthen" | "orthen:" => {
@@ -398,7 +434,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
         "loop" | "loop:" => {
             cs.defnstack.push(DefinitionTypes::Loop);
-            cs.bodystack.push("".into())
+            cs.grow_bodystack();
         }
 
         ":loop" => {
@@ -436,6 +472,9 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
                 }
                 DefinitionTypes::OrElse => {
                     add_or_else_condition!();
+                }
+                DefinitionTypes::Then => {
+                    add_then_block!();
                 }
                 DefinitionTypes::Loop => {
                     add_loop_block!();
