@@ -549,7 +549,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         "greater?" | ">?" => add_builtin!(fun_num_greater),
         ">=?" => add_builtin!(fun_num_greater_or_equal),
         "<?" => add_builtin!(fun_num_less_than),
-        "<=?" => add_builtin!(fun_num_less_than_or_equal),
+        "=<?" => add_builtin!(fun_num_less_than_or_equal),
 
         word => cs.throw_error(&format!("Unknown token '{}'", word)),
     }
