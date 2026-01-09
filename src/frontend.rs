@@ -514,8 +514,13 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.add2body(&backend.user_function(act));
         }
 
-        var if cs.variable_in_scope(var) => {
-            cs.add2body(&backend.read_variable(var));
+        var if var.starts_with('$') => { 
+            let vname = var.strip_prefix('$').unwrap();
+            if cs.variable_in_scope(vname) {
+                cs.add2body(&backend.read_variable(vname));
+            } else {
+                cs.throw_error(&format!("Variable '{vname}' not in scope"))
+            }
         }
 
         num if regexint.is_match(num) => cs.add2body(&backend.push_integer(num)),
