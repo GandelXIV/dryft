@@ -55,9 +55,9 @@ TRUE ifthen: TRUE ifthen: "\nnested conditionals work\n" prints :ifthen :ifthen
 10 var max
 0 var i
 loop:
-	i max equals? ifthen: break ;
-	space i printi
-	i 1 + i!
+	$i $max equals? ifthen: break ;
+	space $i printi
+	$i 1 + i!
 :loop nl
 
 0 ifthen: "A" prints ;
