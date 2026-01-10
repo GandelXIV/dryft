@@ -205,7 +205,9 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             let meta = cs.metastack.pop().unwrap();
             let body = cs.bodystack.pop().unwrap();
 
-            let fname = meta.get(0).unwrap_or_else(|| cs.throw_error("No function name provided"));
+            let fname = meta
+                .get(0)
+                .unwrap_or_else(|| cs.throw_error("No function name provided"));
 
             if fname == "main" {
                 cs.throw_error("main must be defined as an action")
@@ -224,7 +226,9 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             let meta = cs.metastack.pop().unwrap();
             let body = cs.bodystack.pop().unwrap();
 
-            let aname = meta.get(0).unwrap_or_else(|| cs.throw_error("No function name provided"));
+            let aname = meta
+                .get(0)
+                .unwrap_or_else(|| cs.throw_error("No function name provided"));
 
             cs.varscopes.pop();
             cs.actions.insert(aname.clone(), body.clone());
@@ -348,13 +352,12 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
                 || cs.actions.contains_key(vname)
                 || cs.variable_in_scope(vname)
             {
-                cs.throw_error(&format!("cant define variable, symbol {vname} is already taken"))
+                cs.throw_error(&format!(
+                    "cant define variable, symbol {vname} is already taken"
+                ))
             }
 
-            cs.varscopes
-                .last_mut()
-                .unwrap()
-                .insert(vname.to_string());
+            cs.varscopes.last_mut().unwrap().insert(vname.to_string());
             cs.add2body(&backend.create_variable(vname));
         }
 
@@ -399,6 +402,23 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             add_then_block!();
         }
 
+        /// Example syntax
+        /// elect:
+        ///     cond then: ... ;
+        ///     cond then: ... ;
+        ///     ... ;
+        /// elect: cond then:
+        ///    ... ; ... ;
+        ///  
+        "elect" | "elect:" => {
+            todo!()
+        }
+
+        ":elect" => {
+            todo!()
+        }
+
+        // deprecate ifthen, orthen and orelse
         "ifthen" | "ifthen:" => {
             cs.defnstack.push(DefinitionTypes::IfThen);
             cs.grow_bodystack();
@@ -514,7 +534,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.add2body(&backend.user_function(act));
         }
 
-        var if var.starts_with('$') => { 
+        var if var.starts_with('$') => {
             let vname = var.strip_prefix('$').unwrap();
             if cs.variable_in_scope(vname) {
                 cs.add2body(&backend.read_variable(vname));
