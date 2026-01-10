@@ -8,6 +8,8 @@ file_extensions:
 contexts:
   main:
     - include: comments
+    - include: type-block
+    - include: type-signature
     - include: keywords
     - include: variables
     - include: definitions
@@ -23,6 +25,24 @@ contexts:
         - match: '#'
           scope: punctuation.definition.comment.dryft
           pop: true
+
+  type-block:
+    - match: '\('
+      scope: punctuation.section.group.begin
+      push: type-signature
+
+  type-signature:
+    - meta_scope: meta.type.signature
+    - match: '->'
+      scope: keyword.operator.arrow
+    - match: '\b(Int|String|Bool|Float)\b'
+      scope: storage.type
+    - match: '\('
+      scope: punctuation.section.group.begin
+      push: type-signature
+    - match: '\)'
+      scope: punctuation.section.group.end
+      pop: true
 
   variables:
     - match: '(\$|&)[A-Za-z_][A-Za-z0-9_]*|[A-Za-z_][A-Za-z0-9_]*!'
