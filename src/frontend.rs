@@ -244,14 +244,16 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             let body = cs.bodystack.pop().unwrap();
             cs.varscopes.pop();
 
-            cs.add2body(&backend.create_conditional_statement(body));
+            let inelect = cs.defnstack.last().unwrap() == &DefinitionTypes::Elect;
+
+            cs.add2body(&backend.create_conditional_statement(body, inelect));
         };
     }
     macro_rules! add_elect_block {
         () => {
             let body = cs.bodystack.pop().unwrap();
-            todo!()
-        }
+            cs.add2body(&backend.create_elect_block(body));
+        };
     }
 
     macro_rules! add_if_then_condition {
@@ -576,7 +578,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         "^" | "copy" => add_builtin!(fun_copy),
         "v" | "drop" => add_builtin!(fun_drop),
         "swap" => add_builtin!(fun_swap),
-        "equals?" => add_builtin!(fun_simple_equality),
+        "equals?" | "=?" => add_builtin!(fun_simple_equality),
         "nequals?" => add_builtin!(fun_simple_non_equality),
         "not" => add_builtin!(fun_logical_not),
         "either?" => add_builtin!(fun_logical_or),

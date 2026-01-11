@@ -20,12 +20,19 @@ use crate::backends::Backend;
 pub struct C99Backend {}
 
 impl Backend for C99Backend {
+    fn create_elect_block(&self, body: String) -> String {
+        // __label__ has to be placed at the start of a block
+        // we use do{}while(0) to create a simple unconditional run-once block 
+        format!(" do {{ __label__ election_end; {body} \nelection_end: ; }} while (0); ")
+    }
+
     fn method_return(&self) -> String {
         "return;".to_string()
     }
 
-    fn create_conditional_statement(&self, body: String) -> String {
-        format!(" if (dryft_pop()) {{ {body} }}")
+    fn create_conditional_statement(&self, body: String, inelect: bool) -> String {
+        let skip = if inelect { " goto election_end; " } else { "" };
+        format!(" if (dryft_pop()) {{ {body} {skip} }}")
     }
 
     fn fun_num_less_than_or_equal(&self) -> &'static str {

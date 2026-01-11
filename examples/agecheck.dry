@@ -5,8 +5,8 @@ fun check
 :fun
 
 act main
-	20 check	
-	ifthen "You may enter! \n" ;
-	orelse "You cant :( \n" ;
+	elect 20 check then
+		"You may enter! \n" ;
+		"You may not :( \n" ;
 	prints
 :act

@@ -60,11 +60,15 @@ pub trait Backend {
     fn read_variable(&self, name: &str) -> String;
     fn write_variable(&self, name: &str) -> String;
 
-    fn create_conditional_statement(&self, body: String) -> String {
+    fn create_conditional_statement(&self, _body: String, _inelect: bool) -> String {
         todo!()
     }
 
     fn method_return(&self) -> String {
+        todo!()
+    }
+
+    fn create_elect_block(&self, _body: String) -> String {
         todo!()
     }
 }
@@ -80,7 +84,11 @@ pub fn select(name: &str) -> Box<dyn Backend> {
 pub struct MockBackend {}
 
 impl Backend for MockBackend {
-    fn create_conditional_statement(&self, body: String) -> String {
+    fn create_elect_block(&self, _body: String) -> String {
+        "".to_string()
+    }
+
+    fn create_conditional_statement(&self, _body: String, _inelect: bool) -> String {
         "".to_string()
     }
 

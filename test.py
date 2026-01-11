@@ -19,11 +19,11 @@ Hello World
 1
 1
 0
-equal!
-nested conditionals work
-not same
+equals!
+nested conditionals
+two
+18 < 20
  0 1 2 3 4 5 6 7 8 9
-B
 """[1:] # remove blank line
 
 diff = difflib.unified_diff(

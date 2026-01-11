@@ -44,25 +44,37 @@ act main
 
 0 0 nequals? printi nl
 
-10 10 + 20 equals? ifthen: "equal!" prints ;
 
-TRUE ifthen: TRUE ifthen: "\nnested conditionals work\n" prints :ifthen :ifthen
+# new conditionals #
 
-5 4 equals? 
-	ifthen: "the same\n" prints ;
-	orelse: "not same\n" prints ;
+10 10 + 20 =? then: "equals!\n" prints ;
+
+TRUE then:
+	TRUE then:
+		"nested conditionals\n" prints
+	:then
+:then
+
+2 var x
+elect
+	$x 1 =? then: "one\n" ;
+	$x 2 =? then: "two\n" ;
+	$x 3 =? then: "three\n" ;
+	"something else\n" ;
+prints
+
+elect 18 20 >=? then: 
+	"18 >= 20!\n" ;
+	"18 < 20\n" ;
+prints
 
 10 var max
 0 var i
 loop:
-	$i $max equals? ifthen: break ;
+	$i $max =? then break ;
 	space $i printi
 	$i 1 + i!
 :loop nl
 
-0 ifthen: "A" prints ;
-1 orthen: "B" prints ;
-0 orthen: "C" prints ;
-  orelse: "D" prints ; nl
 
 :act
