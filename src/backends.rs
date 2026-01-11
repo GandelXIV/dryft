@@ -63,6 +63,10 @@ pub trait Backend {
     fn create_conditional_statement(&self, body: String) -> String {
         todo!()
     }
+
+    fn method_return(&self) -> String {
+        todo!()
+    }
 }
 
 pub fn select(name: &str) -> Box<dyn Backend> {
@@ -76,6 +80,14 @@ pub fn select(name: &str) -> Box<dyn Backend> {
 pub struct MockBackend {}
 
 impl Backend for MockBackend {
+    fn create_conditional_statement(&self, body: String) -> String {
+        "".to_string()
+    }
+
+    fn method_return(&self) -> String {
+        "".to_string()
+    }
+
     fn fun_num_less_than_or_equal(&self) -> &'static str {
         ""
     }

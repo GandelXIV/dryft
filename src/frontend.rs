@@ -467,6 +467,10 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.add2body(&backend.loop_break());
         }
 
+        "return" => {
+            cs.add2body(&backend.method_return());
+        }
+
         "var" => {
             cs.defnstack.push(DefinitionTypes::Variable);
         }
