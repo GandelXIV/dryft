@@ -26,14 +26,8 @@ pub enum DefinitionTypes {
     Function,
     Action,
     Linkin,
-
     Then,
     Elect,
-
-    IfThen, // deprecated
-    OrThen, // deprecated
-    OrElse, // deprecated
-
     Include,
     Loop,
     Variable,
@@ -256,33 +250,6 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         };
     }
 
-    macro_rules! add_if_then_condition {
-        () => {
-            let body = cs.bodystack.pop().unwrap();
-            cs.varscopes.pop();
-
-            cs.add2body(&backend.create_if_then_condition(body));
-        };
-    }
-
-    macro_rules! add_or_then_condition {
-        () => {
-            let body = cs.bodystack.pop().unwrap();
-            cs.varscopes.pop();
-
-            cs.add2body(&backend.create_or_then_condition(body));
-        };
-    }
-
-    macro_rules! add_or_else_condition {
-        () => {
-            let body = cs.bodystack.pop().unwrap();
-            cs.varscopes.pop();
-
-            cs.add2body(&backend.create_or_else_condition(body));
-        };
-    }
-
     macro_rules! add_loop_block {
         () => {
             let body = cs.bodystack.pop().unwrap();
@@ -411,14 +378,6 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             add_then_block!();
         }
 
-        /// Example syntax
-        /// elect:
-        ///     cond then: ... ;
-        ///     cond then: ... ;
-        ///     ... ;
-        /// elect: cond then:
-        ///    ... ; ... ;
-        ///  
         "elect" | "elect:" => {
             cs.defnstack.push(DefinitionTypes::Elect);
             cs.grow_bodystack();
@@ -426,40 +385,6 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
         ":elect" => {
             add_elect_block!();
-        }
-
-        // deprecate ifthen, orthen and orelse
-        "ifthen" | "ifthen:" => {
-            cs.defnstack.push(DefinitionTypes::IfThen);
-            cs.grow_bodystack();
-            cs.grow_varscopes();
-        }
-
-        "orthen" | "orthen:" => {
-            cs.defnstack.push(DefinitionTypes::OrThen);
-            cs.bodystack.push("".into());
-            cs.varscopes.push(HashSet::new());
-        }
-
-        ":ifthen" => {
-            check_terminator!(IfThen);
-            add_if_then_condition!();
-        }
-
-        ":orthen" => {
-            check_terminator!(OrThen);
-            add_or_then_condition!();
-        }
-
-        "orelse" | "orelse:" => {
-            cs.defnstack.push(DefinitionTypes::OrElse);
-            cs.bodystack.push("".into());
-            cs.varscopes.push(HashSet::new());
-        }
-
-        ":orelse" => {
-            check_terminator!(OrElse);
-            add_or_else_condition!();
         }
 
         "loop" | "loop:" => {
@@ -497,15 +422,6 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
                 }
                 DefinitionTypes::Action => {
                     add_action!();
-                }
-                DefinitionTypes::IfThen => {
-                    add_if_then_condition!();
-                }
-                DefinitionTypes::OrThen => {
-                    add_or_then_condition!();
-                }
-                DefinitionTypes::OrElse => {
-                    add_or_else_condition!();
                 }
                 DefinitionTypes::Then => {
                     add_then_block!();

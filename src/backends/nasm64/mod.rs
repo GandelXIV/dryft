@@ -68,18 +68,6 @@ impl Backend for Nasm64Backend {
         todo!()
     }
 
-    fn create_if_then_condition(&self, _body: String) -> String {
-        todo!()
-    }
-
-    fn create_or_then_condition(&self, _body: String) -> String {
-        todo!()
-    }
-
-    fn create_or_else_condition(&self, _body: String) -> String {
-        todo!()
-    }
-
     fn create_loop_block(&self, _body: String) -> String {
         todo!()
     }

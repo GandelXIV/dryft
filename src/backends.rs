@@ -51,9 +51,6 @@ pub trait Backend {
     fn fun_num_less_than(&self) -> &'static str;
     fn fun_num_less_than_or_equal(&self) -> &'static str;
 
-    fn create_if_then_condition(&self, body: String) -> String;
-    fn create_or_then_condition(&self, body: String) -> String;
-    fn create_or_else_condition(&self, body: String) -> String;
     fn create_loop_block(&self, body: String) -> String;
     fn loop_break(&self) -> String;
     fn create_variable(&self, name: &str) -> String;
@@ -128,10 +125,6 @@ impl Backend for MockBackend {
         "".to_string()
     }
 
-    fn create_or_else_condition(&self, _body: String) -> String {
-        "".to_string()
-    }
-
     fn fun_num_greater(&self) -> &'static str {
         ""
     }
@@ -146,14 +139,6 @@ impl Backend for MockBackend {
 
     fn fun_logical_or(&self) -> &'static str {
         ""
-    }
-
-    fn create_if_then_condition(&self, _body: String) -> String {
-        "".to_string()
-    }
-
-    fn create_or_then_condition(&self, _body: String) -> String {
-        "".to_string()
     }
 
     fn fun_simple_equality(&self) -> &'static str {
