@@ -28,10 +28,11 @@ pub enum DefinitionTypes {
     Linkin,
 
     Then,
-    // following 3 are gonna be deprecated
-    IfThen,
-    OrThen,
-    OrElse,
+    Elect,
+
+    IfThen, // deprecated
+    OrThen, // deprecated
+    OrElse, // deprecated
 
     Include,
     Loop,
@@ -246,6 +247,12 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.add2body(&backend.create_conditional_statement(body));
         };
     }
+    macro_rules! add_elect_block {
+        () => {
+            let body = cs.bodystack.pop().unwrap();
+            todo!()
+        }
+    }
 
     macro_rules! add_if_then_condition {
         () => {
@@ -411,11 +418,12 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         ///    ... ; ... ;
         ///  
         "elect" | "elect:" => {
-            todo!()
+            cs.defnstack.push(DefinitionTypes::Elect);
+            cs.grow_bodystack();
         }
 
         ":elect" => {
-            todo!()
+            add_elect_block!();
         }
 
         // deprecate ifthen, orthen and orelse
@@ -502,6 +510,9 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
                 }
                 DefinitionTypes::Loop => {
                     add_loop_block!();
+                }
+                DefinitionTypes::Elect => {
+                    add_elect_block!();
                 }
                 _ => todo!(),
             }
@@ -592,10 +603,10 @@ mod tests {
     #[test]
     fn simple_parse() {
         let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
-        let mut cs = compile(&mut backend, "fun: inc\n\t1 + ;fun");
+        let mut cs = compile(&mut backend, "fun: inc\n\t1 + :fun");
         assert_eq!(
             cs.log_tokens,
-            make_strings(vec!["fun:", "inc", "1", "+", ";fun"])
+            make_strings(vec!["fun:", "inc", "1", "+", ":fun"])
         );
         //assert_eq!(cs.defstack, vec![(DefinitionTypes::Function, make_strings(vec!["inc", "1", "+", ";"]))]);
     }
@@ -605,7 +616,7 @@ mod tests {
         let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
         let mut cs = compile(&mut backend, "fun: id ;");
         let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
-        let mut cs2 = compile(&mut backend, "fun: id ;fun");
+        let mut cs2 = compile(&mut backend, "fun: id :fun");
         assert_eq!(cs.out, cs2.out);
     }
 
