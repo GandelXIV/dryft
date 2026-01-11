@@ -253,7 +253,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
     macro_rules! add_loop_block {
         () => {
             let body = cs.bodystack.pop().unwrap();
-            cs.varscopes.pop();
+            //cs.varscopes.pop();
 
             cs.add2body(&backend.create_loop_block(body));
         };
