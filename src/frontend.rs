@@ -47,6 +47,7 @@ pub struct CompileState {
     pub metastack: Vec<Vec<String>>,
     pub bodystack: Vec<String>,
     pub varscopes: Vec<HashSet<String>>,
+    pub typestack: Vec<Vec<String>>,
 
     pub iscomment: bool,
     pub isstring: bool,
@@ -70,6 +71,7 @@ impl CompileState {
             metastack: vec![],
             bodystack: vec![String::new()],
             varscopes: vec![HashSet::new()],
+            typestack: vec![],
             iscomment: false,
             isstring: false,
             newstring: String::new(),
@@ -160,6 +162,7 @@ pub fn compile(backend: &mut Box<dyn Backend>, code: &str) -> CompileState {
                     cs.isstring = false;
                     cs.add2body(&backend.push_string(&cs.newstring));
                     cs.newstring = String::new();
+                    cs.typestack.last_mut().unwrap().push("str".to_string())
                 } else {
                     cs.newstring.push(c);
                 }
@@ -340,6 +343,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         "fun:" | "fun" => {
             new_definition!(Function);
             cs.varscopes.push(HashSet::new());
+            cs.typestack.push(vec![])
         }
 
         ":fun" => {
@@ -350,6 +354,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         "act:" | "act" => {
             new_definition!(Action);
             cs.varscopes.push(HashSet::new());
+            cs.typestack.push(vec![])
         }
 
         ":act" => {
@@ -387,12 +392,12 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             add_elect_block!();
         }
 
-        "loop" | "loop:" => {
+        "loop" | "loop:" | "cycle" | "cycle:" => {
             cs.defnstack.push(DefinitionTypes::Loop);
             cs.grow_bodystack();
         }
 
-        ":loop" => {
+        ":loop" | ":cycle" => {
             check_terminator!(Loop);
             add_loop_block!();
             cs.varscopes.push(HashSet::new());
@@ -476,7 +481,10 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             }
         }
 
-        num if regexint.is_match(num) => cs.add2body(&backend.push_integer(num)),
+        num if regexint.is_match(num) => {
+            cs.add2body(&backend.push_integer(num));
+            cs.typestack.last_mut().unwrap().push("int".to_string())
+        }
 
         setvar if setvar.ends_with('!') => {
             let vname = setvar.strip_suffix('!').unwrap();

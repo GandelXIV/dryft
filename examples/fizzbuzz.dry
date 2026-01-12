@@ -6,7 +6,7 @@ fun divby
 act fizzbuzz 
 	var max
 	1 var x
-	loop: $x $max >? then: break ;
+	cycle: $x $max >? then: break ;
 		elect: 
 			$x 15 divby then: "FizzBuzz!" prints ;
 			$x  3 divby then: "Fizz" prints ;
@@ -14,7 +14,7 @@ act fizzbuzz
 			$x printi ;
 		"\n" prints
 		$x 1 + x! 
-	:loop
+	:cycle
 :act
 
 act main 100 fizzbuzz ;

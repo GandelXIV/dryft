@@ -70,11 +70,11 @@ prints
 
 10 var max
 0 var i
-loop:
+cycle:
 	$i $max =? then break ;
 	space $i printi
 	$i 1 + i!
-:loop nl
+:cycle nl
 
 
 :act

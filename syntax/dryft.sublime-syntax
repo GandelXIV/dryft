@@ -53,7 +53,7 @@ contexts:
       captures:
         1: keyword.control.dryft
         2: variable.function.definition.dryft
-    - match: ':?(fun|act|loop|elect|if|then|else|ifthen|orthen|orelse|linkin):?'
+    - match: ':?(fun|act|loop|cycle|elect|if|then|else|linkin):?'
       scope: keyword.control.dryft
 
   definitions:

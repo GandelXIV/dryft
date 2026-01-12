@@ -2,10 +2,10 @@ include lib/std/io
 
 fun factorial var n
 	1 var result
-	loop: $n 0 =? then break ;
+	cycle: $n 0 =? then break ;
 		$result $n * result!
 		$n 1 - n!
-	:loop
+	:cycle
 	$result
 :fun
 
