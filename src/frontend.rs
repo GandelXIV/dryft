@@ -415,6 +415,9 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.defnstack.push(DefinitionTypes::Variable);
         }
 
+        "module" => {}
+        "struct" => {}
+
         ";" | "end" => {
             match cs
                 .defnstack
