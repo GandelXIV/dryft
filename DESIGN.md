@@ -36,6 +36,7 @@ One of my objectives for the syntax was to make it as simple as possible. For ex
 2. a post-check loop `do {} while ()`
 3. a ranged loop using `for (...) {}`
 4. an infinite loop `for (;;) {}` or `goto label`
+
 All of the above are just syntatic sugar for an infinite loop, with a special way to describe a `break` condition. We can implement it with `cycle` and `break`.
 As for the name, I opted for `cycle` because the statement "Break the cycle" felt natural (for when a loop is to be exited).
 
@@ -53,8 +54,8 @@ cond? then: ... ;
 
 # 2 & 3 #
 elect: cond? then:
-	x... ;
-	y... ;
+	... ;
+	... ;
 
 # 4 & 5#
 elect:
@@ -64,6 +65,4 @@ elect:
 	... ;
 
 ```
-I used the name `then`, because the actual checking part takes place in the code preceeding it. There is no need for a `if cond? then: ... ;`.
-For `elect`, it is a word that precisely describes the choice of one option among many candidates.
 
