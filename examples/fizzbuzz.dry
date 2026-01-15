@@ -3,8 +3,7 @@ include lib/std/io
 fun divby
 	mod 0 =? ;
 
-act fizzbuzz 
-	var max
+act fizzbuzz var max
 	1 var x
 	cycle: $x $max >? then: break ;
 		elect: 
@@ -16,5 +15,15 @@ act fizzbuzz
 		$x 1 + x! 
 	:cycle
 :act
+
+fun xdiv
+	var n var m
+	elect:
+		$n 0 =?  then "Division by zero, please fix" prints ;
+		$n 1 =?  then $m ;
+		$m $n =? then 1 ;
+		$m $n >? then 0 ;
+		$m $n / ;
+:fun
 
 act main 100 fizzbuzz ;

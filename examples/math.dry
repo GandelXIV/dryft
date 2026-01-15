@@ -1,5 +1,6 @@
 include lib/std/io
 
+# n! #
 fun factorial var n
 	1 var result
 	cycle: $n 0 =? then break ;
@@ -9,6 +10,17 @@ fun factorial var n
 	$result
 :fun
 
+# x ^ y #
+fun expo var x var y
+	1 var total
+	cycle $x 0 =? then break ;
+		$total $y * total!
+		$x 1 - x! 
+	:cycle
+	$total
+:fun
+
 act main
 	10 factorial printi "\n" prints
+	5 3 expo printi "\n" prints
 :act

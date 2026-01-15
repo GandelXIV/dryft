@@ -31,6 +31,7 @@ pub enum DefinitionTypes {
     Include,
     Loop,
     Variable,
+    Module,
     Negative, // purely comparative for compiler purposes
 }
 
@@ -54,9 +55,14 @@ pub struct CompileState {
     pub newstring: String,
 
     pub prepend: String,
+    pub prepend_remaining: usize, // characters remaining from current prepended content
 
     pub linenumber: isize,
     pub tokenumber: isize,
+    pub token_line: isize,      // line where current token started
+    pub token_file: String,     // file where current token started
+    pub current_file: String,
+    pub file_stack: Vec<(String, isize)>, // stack of (filename, line_number) for includes
 }
 
 impl CompileState {
@@ -76,8 +82,13 @@ impl CompileState {
             isstring: false,
             newstring: String::new(),
             prepend: String::new(),
-            linenumber: 0,
+            prepend_remaining: 0,
+            linenumber: 1,
             tokenumber: 0,
+            token_line: 1,
+            token_file: "<main>".to_string(),
+            current_file: "<main>".to_string(),
+            file_stack: vec![],
         }
     }
 
@@ -116,9 +127,10 @@ impl CompileState {
     }
 
     fn throw_error(&self, msg: &str) -> ! {
-        let line = self.linenumber;
-        let token = self.tokenumber; // token printing is broken when includes are used, figure out why TODO
-        panic!("[DRYFT ERROR] line {line}, word {token}: {msg}")
+        let line = self.token_line;
+        let token = self.tokenumber;
+        let file = &self.token_file;
+        panic!("[DRYFT ERROR] {file}:{line}, word {token}: {msg}")
     }
 }
 
@@ -151,6 +163,12 @@ pub fn compile(backend: &mut Box<dyn Backend>, code: &str) -> CompileState {
             cs.tokenumber = 0;
         }
 
+        // Track line and file where current token starts
+        if cs.word.is_empty() && !matches!(letter, ' ' | '\n' | '\t' | '#' | '"') {
+            cs.token_line = cs.linenumber;
+            cs.token_file = cs.current_file.clone();
+        }
+
         match letter {
             c if cs.iscomment => {
                 if c == '#' {
@@ -171,6 +189,18 @@ pub fn compile(backend: &mut Box<dyn Backend>, code: &str) -> CompileState {
             '#' => cs.iscomment = true,
             '"' => cs.isstring = true,
             other => cs.word.push(other),
+        }
+
+        // Track when we've finished processing an included file
+        if cs.prepend_remaining > 0 {
+            cs.prepend_remaining -= 1;
+            if cs.prepend_remaining == 0 && !cs.file_stack.is_empty() {
+                let (prev_file, prev_line) = cs.file_stack.pop().unwrap();
+                cs.current_file = prev_file;
+                cs.linenumber = prev_line;
+                cs.tokenumber = 0;
+                // Don't reset token_line here - it will be updated naturally when next token starts
+            }
         }
     }
     new_token!(); // last word may not be whitespace separated
@@ -268,6 +298,12 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         }};
     }
 
+    macro_rules! add_module {
+        () => {
+            let body = cs.bodystack.pop().unwrap();
+        };
+    }
+
     macro_rules! check_terminator {
         ($expected:ident) => {
             if cs
@@ -310,15 +346,46 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             }
         }
 
+        x if *cs.defnstack.last().unwrap_or(&DefinitionTypes::Negative)
+            == DefinitionTypes::Linkin
+            && cs.metastack.last().unwrap().len() < 2 =>
+        {
+            cs.metastack.last_mut().unwrap().push(x.into());
+            // if we have all the arguments we needed
+            if cs.metastack.last_mut().unwrap().len() == 2 {
+                let mut meta = cs.metastack.pop().unwrap();
+                cs.defnstack.pop(); // end our defintion
+
+                let class = meta.remove(0);
+                let mname = meta.remove(0);
+
+                match class.as_ref() {
+                    "fun" => cs.functions.insert(mname.clone(), "LINKED IN".to_string()),
+                    "act" => cs.actions.insert(mname.clone(), "LINKED IN".to_string()),
+                    other => cs.throw_error(&format!("Invalid link-in class {other}")),
+                };
+
+                cs.add2body(&backend.linkin_function(&mname));
+            }
+        }
+
         f if *cs.defnstack.last().unwrap_or(&DefinitionTypes::Negative)
             == DefinitionTypes::Include =>
         {
             cs.defnstack.pop();
             let mut pat = String::from(f);
             pat.push_str(".dry");
-            let f = String::from_utf8(fs::read(&pat).expect("Could not locate include")).unwrap();
-            cs.prepend.push_str(&f);
-            cs.linenumber -= f.matches('\n').count() as isize;
+            let included_content = String::from_utf8(fs::read(&pat).expect("Could not locate include")).unwrap();
+
+            // Save current file context
+            cs.file_stack.push((cs.current_file.clone(), cs.linenumber - 1));
+            cs.current_file = pat.clone();
+            cs.linenumber = 1; // Start at line 1 for the included file
+            cs.tokenumber = 0;
+
+            // Track length of included content so we know when it's done
+            cs.prepend_remaining = included_content.len();
+            cs.prepend.push_str(&included_content);
         }
 
         v if *cs.defnstack.last().unwrap_or(&DefinitionTypes::Negative)
@@ -415,7 +482,17 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.defnstack.push(DefinitionTypes::Variable);
         }
 
-        "module" => {}
+        "module" => {
+            cs.defnstack.push(DefinitionTypes::Module);
+            cs.grow_bodystack();
+            cs.grow_metastack();
+        }
+
+        ":module" => {
+            check_terminator!(Module);
+            add_module!();
+        }
+
         "struct" => {}
 
         ";" | "end" => {
@@ -439,6 +516,9 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
                 }
                 DefinitionTypes::Elect => {
                     add_elect_block!();
+                }
+                DefinitionTypes::Module => {
+                    add_module!();
                 }
                 _ => todo!(),
             }
