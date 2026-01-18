@@ -32,7 +32,15 @@ pub enum DefinitionTypes {
     Loop,
     Variable,
     Module,
-    Negative, // purely comparative for compiler purposes
+    Negative, // purely comparative, not actually constructed by code
+}
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+enum ValueTypes {
+    Number,
+    Text,
+    Binary,
+    Fake, // purely comparative, not actually constructed by code
 }
 
 pub struct CompileState {
@@ -48,7 +56,7 @@ pub struct CompileState {
     pub metastack: Vec<Vec<String>>,
     pub bodystack: Vec<String>,
     pub varscopes: Vec<HashSet<String>>,
-    pub typestack: Vec<Vec<String>>,
+    pub typestack: Vec<Vec<ValueTypes>>,
 
     pub iscomment: bool,
     pub isstring: bool,
@@ -73,11 +81,13 @@ impl CompileState {
             word: String::new(),
             functions: HashMap::new(),
             actions: HashMap::new(),
+
             defnstack: vec![],
             metastack: vec![],
             bodystack: vec![String::new()],
             varscopes: vec![HashSet::new()],
-            typestack: vec![],
+            typestack: vec![vec![]],
+
             iscomment: false,
             isstring: false,
             newstring: String::new(),
@@ -95,6 +105,40 @@ impl CompileState {
     // append codegen
     fn add2body(&mut self, s: &str) {
         self.bodystack.last_mut().unwrap().push_str(s)
+    }
+
+    fn push_type(&mut self, t: ValueTypes) {
+        self.typestack.last_mut().unwrap().push(t)
+    }
+
+    fn pop_type(&mut self) -> ValueTypes {
+        self.typestack.last_mut().expect("should implement pulling types from previous frame").pop()
+            .expect("type stack should not be empty when popping")
+    }
+
+    fn expect_types(&mut self, expected: &[ValueTypes]) {
+        let stack = self.typestack.last_mut().expect("type stack frame should exist");
+
+        // If stack has enough types, verify them; otherwise skip checking (function definitions)
+        if stack.len() >= expected.len() {
+            // Pop and check types from top to bottom (reverse order of expected slice)
+            let mut actual_types = Vec::new();
+            for _ in 0..expected.len() {
+                actual_types.push(stack.pop().expect("type should exist on stack"));
+            }
+            actual_types.reverse(); // Now in bottom-to-top order
+
+            for (i, (&expected_type, &actual_type)) in expected.iter().zip(actual_types.iter()).enumerate() {
+                if actual_type != expected_type && expected_type != ValueTypes::Fake {
+                    self.throw_warning(&format!(
+                        "Type mismatch at position {}: expected {:?}, got {:?}",
+                        i,
+                        expected_type,
+                        actual_type
+                    ));
+                }
+            }
+        }
     }
 
     // checks that the action is not called inside any function scope
@@ -131,6 +175,13 @@ impl CompileState {
         let token = self.tokenumber;
         let file = &self.token_file;
         panic!("[DRYFT ERROR] {file}:{line}, word {token}: {msg}")
+    }
+
+    fn throw_warning(&self, msg: &str) {
+        let line = self.token_line;
+        let token = self.tokenumber;
+        let file = &self.token_file;
+        println!("[DRYFT WARNING] {file}:{line}, word {token}: {msg}")
     }
 }
 
@@ -179,8 +230,8 @@ pub fn compile(backend: &mut Box<dyn Backend>, code: &str) -> CompileState {
                 if c == '"' {
                     cs.isstring = false;
                     cs.add2body(&backend.push_string(&cs.newstring));
+                    cs.push_type(ValueTypes::Text);
                     cs.newstring = String::new();
-                    cs.typestack.last_mut().unwrap().push("str".to_string())
                 } else {
                     cs.newstring.push(c);
                 }
@@ -232,6 +283,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         () => {
             let meta = cs.metastack.pop().unwrap();
             let body = cs.bodystack.pop().unwrap();
+            let ts = cs.typestack.pop().unwrap();
 
             let fname = meta
                 .get(0)
@@ -253,6 +305,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         () => {
             let meta = cs.metastack.pop().unwrap();
             let body = cs.bodystack.pop().unwrap();
+            let ts = cs.typestack.pop().unwrap();
 
             let aname = meta
                 .get(0)
@@ -566,7 +619,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
         num if regexint.is_match(num) => {
             cs.add2body(&backend.push_integer(num));
-            cs.typestack.last_mut().unwrap().push("int".to_string())
+            cs.push_type(ValueTypes::Number);
         }
 
         setvar if setvar.ends_with('!') => {
@@ -577,23 +630,95 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.add2body(&backend.write_variable(vname));
         }
 
-        "+" => add_builtin!(fun_add),
-        "-" => add_builtin!(fun_sub),
-        "*" => add_builtin!(fun_mul),
-        "/" => add_builtin!(fun_div),
-        "mod" => add_builtin!(fun_mod),
-        "^" | "copy" => add_builtin!(fun_copy),
-        "v" | "drop" => add_builtin!(fun_drop),
-        "swap" => add_builtin!(fun_swap),
-        "equals?" | "=?" => add_builtin!(fun_simple_equality),
-        "nequals?" => add_builtin!(fun_simple_non_equality),
-        "not" => add_builtin!(fun_logical_not),
-        "either?" => add_builtin!(fun_logical_or),
-        "both?" => add_builtin!(fun_logical_and),
-        "greater?" | ">?" => add_builtin!(fun_num_greater),
-        ">=?" => add_builtin!(fun_num_greater_or_equal),
-        "<?" => add_builtin!(fun_num_less_than),
-        "=<?" => add_builtin!(fun_num_less_than_or_equal),
+        "+" => {
+            cs.expect_types(&[ValueTypes::Number, ValueTypes::Number]);
+            add_builtin!(fun_add);
+            cs.push_type(ValueTypes::Number);
+        }
+        "-" => {
+            cs.expect_types(&[ValueTypes::Number, ValueTypes::Number]);
+            add_builtin!(fun_sub);
+            cs.push_type(ValueTypes::Number);
+        }
+        "*" => {
+            cs.expect_types(&[ValueTypes::Number, ValueTypes::Number]);
+            add_builtin!(fun_mul);
+            cs.push_type(ValueTypes::Number);
+        }
+        "/" => {
+            cs.expect_types(&[ValueTypes::Number, ValueTypes::Number]);
+            add_builtin!(fun_div);
+            cs.push_type(ValueTypes::Number);
+        }
+        "mod" => {
+            cs.expect_types(&[ValueTypes::Number, ValueTypes::Number]);
+            add_builtin!(fun_mod);
+            cs.push_type(ValueTypes::Number);
+        }
+        "^" | "copy" => {
+            let t = cs.pop_type();
+            add_builtin!(fun_copy);
+            cs.push_type(t);
+            cs.push_type(t);
+        }
+        "v" | "drop" => {
+            let _t = cs.pop_type();
+            add_builtin!(fun_drop);
+        }
+        "swap" => {
+            let t1 = cs.pop_type();
+            let t2 = cs.pop_type();
+            add_builtin!(fun_swap);
+            cs.push_type(t1);
+            cs.push_type(t2);
+        }
+        "equals?" | "=?" => {
+            let _t2 = cs.pop_type();
+            let _t1 = cs.pop_type();
+            add_builtin!(fun_simple_equality);
+            cs.push_type(ValueTypes::Binary);
+        }
+        "nequals?" => {
+            let _t2 = cs.pop_type();
+            let _t1 = cs.pop_type();
+            add_builtin!(fun_simple_non_equality);
+            cs.push_type(ValueTypes::Binary);
+        }
+        "not" => {
+            cs.expect_types(&[ValueTypes::Binary]);
+            add_builtin!(fun_logical_not);
+            cs.push_type(ValueTypes::Binary);
+        }
+        "either?" => {
+            cs.expect_types(&[ValueTypes::Binary, ValueTypes::Binary]);
+            add_builtin!(fun_logical_or);
+            cs.push_type(ValueTypes::Binary);
+        }
+        "both?" => {
+            cs.expect_types(&[ValueTypes::Binary, ValueTypes::Binary]);
+            add_builtin!(fun_logical_and);
+            cs.push_type(ValueTypes::Binary);
+        }
+        "greater?" | ">?" => {
+            cs.expect_types(&[ValueTypes::Number, ValueTypes::Number]);
+            add_builtin!(fun_num_greater);
+            cs.push_type(ValueTypes::Binary);
+        }
+        ">=?" => {
+            cs.expect_types(&[ValueTypes::Number, ValueTypes::Number]);
+            add_builtin!(fun_num_greater_or_equal);
+            cs.push_type(ValueTypes::Binary);
+        }
+        "<?" => {
+            cs.expect_types(&[ValueTypes::Number, ValueTypes::Number]);
+            add_builtin!(fun_num_less_than);
+            cs.push_type(ValueTypes::Binary);
+        }
+        "=<?" => {
+            cs.expect_types(&[ValueTypes::Number, ValueTypes::Number]);
+            add_builtin!(fun_num_less_than_or_equal);
+            cs.push_type(ValueTypes::Binary);
+        }
 
         word => cs.throw_error(&format!("Unknown token '{}'", word)),
     }
@@ -607,6 +732,19 @@ mod tests {
 
     fn make_strings(v: Vec<&str>) -> Vec<String> {
         v.into_iter().map(String::from).collect()
+    }
+
+    #[test]
+    fn primitive_types() {
+        use std::panic;
+
+        // this is supposed to crash
+        let result = panic::catch_unwind(|| {
+            let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
+            compile(&mut backend, "act main \"text\" 1 + :act")
+        });
+
+        assert!(result.is_err(), "Expected type error panic");
     }
 
     #[test]
