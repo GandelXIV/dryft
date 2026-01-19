@@ -68,8 +68,8 @@ pub struct CompileState {
 
     pub linenumber: isize,
     pub tokenumber: isize,
-    pub token_line: isize,      // line where current token started
-    pub token_file: String,     // file where current token started
+    pub token_line: isize,  // line where current token started
+    pub token_file: String, // file where current token started
     pub current_file: String,
     pub file_stack: Vec<(String, isize)>, // stack of (filename, line_number) for includes
 }
@@ -113,12 +113,18 @@ impl CompileState {
     }
 
     fn pop_type(&mut self) -> ValueTypes {
-        self.typestack.last_mut().expect("should implement pulling types from previous frame").pop()
+        self.typestack
+            .last_mut()
+            .expect("should implement pulling types from previous frame")
+            .pop()
             .expect("type stack should not be empty when popping")
     }
 
     fn expect_types(&mut self, expected: &[ValueTypes]) {
-        let stack = self.typestack.last_mut().expect("type stack frame should exist");
+        let stack = self
+            .typestack
+            .last_mut()
+            .expect("type stack frame should exist");
 
         // If stack has enough types, verify them; otherwise skip checking (function definitions)
         if stack.len() >= expected.len() {
@@ -129,13 +135,13 @@ impl CompileState {
             }
             actual_types.reverse(); // Now in bottom-to-top order
 
-            for (i, (&expected_type, &actual_type)) in expected.iter().zip(actual_types.iter()).enumerate() {
+            for (i, (&expected_type, &actual_type)) in
+                expected.iter().zip(actual_types.iter()).enumerate()
+            {
                 if actual_type != expected_type && expected_type != ValueTypes::Fake {
                     self.throw_error(&format!(
                         "Type mismatch at position {}: expected {:?}, got {:?}",
-                        i,
-                        expected_type,
-                        actual_type
+                        i, expected_type, actual_type
                     ));
                 }
             }
@@ -153,7 +159,7 @@ impl CompileState {
     fn variable_in_scope(&self, vname: &str) -> Option<ValueTypes> {
         for scope in self.varscopes.iter() {
             if scope.contains_key(vname) {
-                return Some(scope.get(vname).unwrap().clone())
+                return Some(scope.get(vname).unwrap().clone());
             }
         }
         None
@@ -429,10 +435,12 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.defnstack.pop();
             let mut pat = String::from(f);
             pat.push_str(".dry");
-            let included_content = String::from_utf8(fs::read(&pat).expect("Could not locate include")).unwrap();
+            let included_content =
+                String::from_utf8(fs::read(&pat).expect("Could not locate include")).unwrap();
 
             // Save current file context
-            cs.file_stack.push((cs.current_file.clone(), cs.linenumber - 1));
+            cs.file_stack
+                .push((cs.current_file.clone(), cs.linenumber - 1));
             cs.current_file = pat.clone();
             cs.linenumber = 1; // Start at line 1 for the included file
             cs.tokenumber = 0;
@@ -459,7 +467,10 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
             let vtype = cs.pop_type();
 
-            cs.varscopes.last_mut().unwrap().insert(vname.to_string(), vtype);
+            cs.varscopes
+                .last_mut()
+                .unwrap()
+                .insert(vname.to_string(), vtype);
             cs.add2body(&backend.create_variable(vname));
         }
 
@@ -760,7 +771,10 @@ mod tests {
         // this is supposed to crash
         let result = panic::catch_unwind(|| {
             let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
-            compile(&mut backend, "act main \"hello\" var x 5 var y $x $y + :act")
+            compile(
+                &mut backend,
+                "act main \"hello\" var x 5 var y $x $y + :act",
+            )
         });
         assert!(result.is_err(), "Expected type error panic");
     }
