@@ -43,6 +43,7 @@ enum ValueTypes {
     Fake, // purely comparative, not actually constructed by code
 }
 
+#[derive(Debug)]
 pub struct CompileState {
     pub out: Option<String>,     // access after compile() has been called
     pub log_tokens: Vec<String>, // purely for debugging usecases
@@ -55,7 +56,7 @@ pub struct CompileState {
     pub defnstack: Vec<DefinitionTypes>,
     pub metastack: Vec<Vec<String>>,
     pub bodystack: Vec<String>,
-    pub varscopes: Vec<HashSet<String>>,
+    pub varscopes: Vec<HashMap<String, ValueTypes>>,
     pub typestack: Vec<Vec<ValueTypes>>,
 
     pub iscomment: bool,
@@ -85,7 +86,7 @@ impl CompileState {
             defnstack: vec![],
             metastack: vec![],
             bodystack: vec![String::new()],
-            varscopes: vec![HashSet::new()],
+            varscopes: vec![HashMap::new()],
             typestack: vec![vec![]],
 
             iscomment: false,
@@ -130,7 +131,7 @@ impl CompileState {
 
             for (i, (&expected_type, &actual_type)) in expected.iter().zip(actual_types.iter()).enumerate() {
                 if actual_type != expected_type && expected_type != ValueTypes::Fake {
-                    self.throw_warning(&format!(
+                    self.throw_error(&format!(
                         "Type mismatch at position {}: expected {:?}, got {:?}",
                         i,
                         expected_type,
@@ -149,13 +150,13 @@ impl CompileState {
     }
 
     // does the variable exist in scope? the actual location is handled by the backend
-    fn variable_in_scope(&self, vname: &str) -> bool {
+    fn variable_in_scope(&self, vname: &str) -> Option<ValueTypes> {
         for scope in self.varscopes.iter() {
-            if scope.contains(vname) {
-                return true;
+            if scope.contains_key(vname) {
+                return Some(scope.get(vname).unwrap().clone())
             }
         }
-        false
+        None
     }
 
     fn grow_bodystack(&mut self) {
@@ -163,7 +164,7 @@ impl CompileState {
     }
 
     fn grow_varscopes(&mut self) {
-        self.varscopes.push(HashSet::new())
+        self.varscopes.push(HashMap::new())
     }
 
     fn grow_metastack(&mut self) {
@@ -374,7 +375,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         };
     }
 
-    match cs.word.as_ref() {
+    match cs.word.clone().as_ref() {
         // needs higher priority than fun & act keywords
         x if *cs.defnstack.last().unwrap_or(&DefinitionTypes::Negative)
             == DefinitionTypes::Linkin
@@ -449,20 +450,22 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
             if cs.functions.contains_key(vname)
                 || cs.actions.contains_key(vname)
-                || cs.variable_in_scope(vname)
+                || cs.variable_in_scope(vname).is_some()
             {
                 cs.throw_error(&format!(
                     "cant define variable, symbol {vname} is already taken"
                 ))
             }
 
-            cs.varscopes.last_mut().unwrap().insert(vname.to_string());
+            let vtype = cs.pop_type();
+
+            cs.varscopes.last_mut().unwrap().insert(vname.to_string(), vtype);
             cs.add2body(&backend.create_variable(vname));
         }
 
         "fun:" | "fun" => {
             new_definition!(Function);
-            cs.varscopes.push(HashSet::new());
+            cs.grow_varscopes();
             cs.typestack.push(vec![])
         }
 
@@ -473,7 +476,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
         "act:" | "act" => {
             new_definition!(Action);
-            cs.varscopes.push(HashSet::new());
+            cs.grow_varscopes();
             cs.typestack.push(vec![])
         }
 
@@ -520,7 +523,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         ":loop" | ":cycle" => {
             check_terminator!(Loop);
             add_loop_block!();
-            cs.varscopes.push(HashSet::new());
+            cs.grow_varscopes();
         }
 
         "break" => {
@@ -610,7 +613,8 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
         var if var.starts_with('$') => {
             let vname = var.strip_prefix('$').unwrap();
-            if cs.variable_in_scope(vname) {
+            if let Some(t) = cs.variable_in_scope(vname) {
+                cs.push_type(t);
                 cs.add2body(&backend.read_variable(vname));
             } else {
                 cs.throw_error(&format!("Variable '{vname}' not in scope"))
@@ -624,10 +628,12 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
         setvar if setvar.ends_with('!') => {
             let vname = setvar.strip_suffix('!').unwrap();
-            if !cs.variable_in_scope(vname) {
+            if let Some(t) = cs.variable_in_scope(vname) {
+                cs.add2body(&backend.write_variable(vname));
+                cs.expect_types(&[t])
+            } else {
                 cs.throw_error(&format!("Invalid write to variable {vname}, not found"))
             }
-            cs.add2body(&backend.write_variable(vname));
         }
 
         "+" => {
@@ -735,7 +741,7 @@ mod tests {
     }
 
     #[test]
-    fn primitive_types() {
+    fn ts_primitive() {
         use std::panic;
 
         // this is supposed to crash
@@ -743,7 +749,31 @@ mod tests {
             let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
             compile(&mut backend, "act main \"text\" 1 + :act")
         });
+        println!("{:?}", result);
+        assert!(result.is_err(), "Expected type error panic");
+    }
 
+    #[test]
+    fn ts_variable_read() {
+        use std::panic;
+
+        // this is supposed to crash
+        let result = panic::catch_unwind(|| {
+            let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
+            compile(&mut backend, "act main \"hello\" var x 5 var y $x $y + :act")
+        });
+        assert!(result.is_err(), "Expected type error panic");
+    }
+
+    #[test]
+    fn ts_variable_write() {
+        use std::panic;
+
+        // this is supposed to crash
+        let result = panic::catch_unwind(|| {
+            let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
+            compile(&mut backend, "act main 1 var x \"str\" x! :act")
+        });
         assert!(result.is_err(), "Expected type error panic");
     }
 
