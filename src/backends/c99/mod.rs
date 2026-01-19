@@ -22,7 +22,7 @@ pub struct C99Backend {}
 impl Backend for C99Backend {
     fn create_elect_block(&self, body: String) -> String {
         // __label__ has to be placed at the start of a block
-        // we use do{}while(0) to create a simple unconditional run-once block 
+        // we use do{}while(0) to create a simple unconditional run-once block
         format!(" do {{ __label__ election_end; {body} \nelection_end: ; }} while (0); ")
     }
 
