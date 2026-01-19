@@ -30,7 +30,7 @@ I wanted this project to be light-weight and usable in a wide range of fields, w
 # Why act and fun?
 When I was studying functional programming, I realized that the usefullness of pure functions is not the 'pure' part. Rather, its the distinction between pure and impure that is useful. Being able to decouple your logic and state code is how you write good software. Pure(logic) code can be easily understood, tested, optimized with memoization + compile time eval, and impure(state) code is easily recognizable and portable.
 
-# Why `then`, `elect` and `cycle`?
+# Why `then`, `when` and `cycle`?
 One of my objectives for the syntax was to make it as simple as possible. For example, in C you can make:
 1. a pre-check loop `while () {}` 
 2. a post-check loop `do {} while ()`
@@ -47,18 +47,18 @@ The same could be said about conditions in C:
 4. multiple exclusive conditionals `... else if () {} ...`
 5. equality-based selection `switch`
 
-These can be implemented using `then` for simple conditional statements and letting `elect` handle all the others.
+These can be implemented using `then` for simple conditional statements and letting `when` handle all the others.
 ```
 # 1 #
 cond? then: ... ;
 
 # 2 & 3 #
-elect: cond? then:
+when: cond? then:
 	... ;
 	... ;
 
 # 4 & 5#
-elect:
+when:
 	a then: ... ;
 	b then: ... ;
 	c then: ... ;

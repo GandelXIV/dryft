@@ -56,14 +56,14 @@ TRUE then:
 :then
 
 2 var x
-elect
+when
 	$x 1 =? then: "one\n" ;
 	$x 2 =? then: "two\n" ;
 	$x 3 =? then: "three\n" ;
 	"something else\n" ;
 prints
 
-elect 18 20 >=? then: 
+when 18 20 >=? then: 
 	"18 >= 20!\n" ;
 	"18 < 20\n" ;
 prints

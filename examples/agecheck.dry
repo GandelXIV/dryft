@@ -5,7 +5,7 @@ fun check
 :fun
 
 act main
-	elect 20 check then
+	when 20 check then
 		"You may enter! \n" ;
 		"You may not :( \n" ;
 	prints

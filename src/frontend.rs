@@ -450,12 +450,12 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             add_then_block!();
         }
 
-        "elect" | "elect:" => {
+        "elect" | "elect:" | "when" | "when:" => {
             cs.defnstack.push(DefinitionTypes::Elect);
             cs.grow_bodystack();
         }
 
-        ":elect" => {
+        ":elect" | ":when" => {
             add_elect_block!();
         }
 
