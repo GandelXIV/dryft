@@ -20,7 +20,20 @@ fun expo var x var y
 	$total
 :fun
 
+# TODO: this doesnt compile with x,y var names. Clash with upper fun? #
+act safediv 
+	var b
+	var a
+	when:
+		$b 0 equals? then "Division by zero" prints ; 
+		$a 0 equals? then 0 ;
+		$b 1 equals? then $a ;
+		$a $b / ;
+:act
+
 act main
 	10 factorial printi "\n" prints
 	5 3 expo printi "\n" prints
+	5 1 safediv printi "\n" prints
+	5 0 safediv "\n" prints
 :act
