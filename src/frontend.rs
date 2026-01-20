@@ -58,6 +58,7 @@ pub struct CompileState {
     pub bodystack: Vec<String>,
     pub varscopes: Vec<HashMap<String, ValueTypes>>,
     pub typestack: Vec<Vec<ValueTypes>>,
+    pub voidstack: Vec<Vec<ValueTypes>>,
 
     pub iscomment: bool,
     pub isstring: bool,
@@ -88,6 +89,7 @@ impl CompileState {
             bodystack: vec![String::new()],
             varscopes: vec![HashMap::new()],
             typestack: vec![vec![]],
+            voidstack: vec![vec![]],
 
             iscomment: false,
             isstring: false,
@@ -175,6 +177,14 @@ impl CompileState {
 
     fn grow_metastack(&mut self) {
         self.metastack.push(vec![])
+    }
+
+    fn grow_typestack(&mut self) {
+        self.typestack.push(vec![])
+    }
+
+    fn grow_voidstack(&mut self) {
+        self.typestack.push(vec![])
     }
 
     fn throw_error(&self, msg: &str) -> ! {
@@ -477,7 +487,8 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         "fun:" | "fun" => {
             new_definition!(Function);
             cs.grow_varscopes();
-            cs.typestack.push(vec![])
+            cs.grow_typestack();
+            cs.grow_voidstack();
         }
 
         ":fun" => {
@@ -488,7 +499,8 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         "act:" | "act" => {
             new_definition!(Action);
             cs.grow_varscopes();
-            cs.typestack.push(vec![])
+            cs.grow_typestack();
+            cs.grow_voidstack();
         }
 
         ":act" => {
