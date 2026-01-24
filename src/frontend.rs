@@ -115,27 +115,34 @@ impl CompileState {
     }
 
     fn pop_type(&mut self) -> ValueTypes {
+        if cfg!(not(feature = "typesystem")) {
+            return ValueTypes::Fake
+        }
+        
         self.typestack
             .last_mut()
             .expect("should implement pulling types from previous frame")
             .pop()
-            .expect("type stack should not be empty when popping")
+            .expect("type stack should not be empty when popping")            
     }
 
     fn expect_types(&mut self, expected: &[ValueTypes]) {
+        if cfg!(not(feature = "typesystem")) {
+            return
+        }
+
         let stack = self
             .typestack
             .last_mut()
             .expect("type stack frame should exist");
 
-        // If stack has enough types, verify them; otherwise skip checking (function definitions)
         if stack.len() >= expected.len() {
-            // Pop and check types from top to bottom (reverse order of expected slice)
+
             let mut actual_types = Vec::new();
             for _ in 0..expected.len() {
                 actual_types.push(stack.pop().expect("type should exist on stack"));
             }
-            actual_types.reverse(); // Now in bottom-to-top order
+            actual_types.reverse();
 
             for (i, (&expected_type, &actual_type)) in
                 expected.iter().zip(actual_types.iter()).enumerate()
