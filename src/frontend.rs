@@ -771,6 +771,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "typesystem")]
     fn ts_primitive() {
         use std::panic;
 
@@ -784,6 +785,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "typesystem")]
     fn ts_variable_read() {
         use std::panic;
 
@@ -799,6 +801,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "typesystem")]
     fn ts_variable_write() {
         use std::panic;
 
