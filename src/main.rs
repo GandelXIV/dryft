@@ -27,6 +27,8 @@ use serde::Deserialize;
 
 pub mod backends;
 pub mod frontend;
+#[cfg(test)]
+pub mod test;
 
 fn repl(targetspec: TargetSpec) {
     // temporary disable because of how the repl pastes code into main directly
