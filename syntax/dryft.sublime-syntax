@@ -49,7 +49,7 @@ contexts:
       scope: variable.other
 
   keywords:
-    - match: '\b(fun|act|var|include):?\s+([a-zA-Z_][a-zA-Z0-9_?/.]*)'
+    - match: '\b(act:|fun:|var:|include:)\s+([a-zA-Z_][a-zA-Z0-9_?/.]*)'
       captures:
         1: keyword.control.dryft
         2: variable.function.definition.dryft
