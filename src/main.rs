@@ -27,6 +27,7 @@ use serde::Deserialize;
 
 pub mod backends;
 pub mod frontend;
+pub mod state;
 #[cfg(test)]
 pub mod test;
 
