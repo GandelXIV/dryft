@@ -49,16 +49,14 @@ fn repl(targetspec: TargetSpec) {
         }
 
         match input.trim() {
-            /*"#open" => {
-                let mut fname = String::new();
-                io::stdin()
-                    .read_line(&mut fname)
-                    .expect("Failed to read line");
-                rbr(fname.trim());
-            }*/
             ".help" | "help" => {
                 println!(".help/help  => display this screen");
                 println!(".exit/.quit => leave the REPL, terminating this process");
+                println!(".view       => inspect the contents of generated IR from last execution")
+            }
+            ".view" => {
+                let mut ir = &String::from_utf8(fs::read(&targetspec.intermediate).unwrap()).unwrap();
+                println!("{}", ir);
             }
             ".exit" | ".quit" => break,
             _ => {
