@@ -25,6 +25,7 @@ pub trait Backend {
     // any callable method is classified as this
     fn create_function(&self, fname: &str, body: String) -> String;
     fn push_integer(&self, i: &str) -> String;
+    // string format is not defined yet
     fn push_string(&self, s: &str) -> String;
     fn user_function(&self, f: &str) -> String; // CALL a user defined function
     fn linkin_function(&self, name: &str) -> String;
@@ -35,10 +36,12 @@ pub trait Backend {
     fn fun_div(&self) -> &'static str;
     fn fun_mod(&self) -> &'static str;
 
+    // equality based data stack representative - not great for ptr types
     fn fun_simple_equality(&self) -> &'static str;
     fn fun_simple_non_equality(&self) -> &'static str;
 
     fn fun_copy(&self) -> &'static str;
+    // remove primitive
     fn fun_drop(&self) -> &'static str;
     fn fun_swap(&self) -> &'static str;
 
@@ -51,9 +54,11 @@ pub trait Backend {
     fn fun_num_less_than(&self) -> &'static str;
     fn fun_num_less_than_or_equal(&self) -> &'static str;
 
+    // infinite loop
     fn create_loop_block(&self, body: String) -> String;
     fn loop_break(&self) -> String;
     fn create_variable(&self, name: &str) -> String;
+    // copy as primitive
     fn read_variable(&self, name: &str) -> String;
     fn write_variable(&self, name: &str) -> String;
 
@@ -61,10 +66,12 @@ pub trait Backend {
         todo!()
     }
 
+    // return from inside a create_function()
     fn method_return(&self) -> String {
         todo!()
     }
 
+    // when: keyword, formely known as elect
     fn create_elect_block(&self, _body: String) -> String {
         todo!()
     }

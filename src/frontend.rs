@@ -16,9 +16,9 @@
 */
 
 use crate::backends::Backend;
-use crate::state::ValueTypes;
-use crate::state::DefinitionTypes;
 use crate::state::CompileState;
+use crate::state::DefinitionTypes;
+use crate::state::ValueTypes;
 use regex::Regex;
 use std::fs;
 
@@ -38,6 +38,8 @@ pub fn compile(backend: &mut Box<dyn Backend>, code: &str) -> CompileState {
 
     let mut code = code.to_string();
 
+    // drain the whole text buffer character ny character
+    // compilation is single-pass
     while !code.is_empty() {
         if !cs.prepend.is_empty() {
             code.insert_str(0, &cs.prepend);
@@ -166,6 +168,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.add2body(&backend.create_conditional_statement(body, inelect));
         };
     }
+
     macro_rules! add_elect_block {
         () => {
             let body = cs.bodystack.pop().unwrap();

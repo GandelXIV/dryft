@@ -16,9 +16,9 @@
 */
 
 use crate::backends::c99::C99Backend;
+use crate::backends::Backend;
 use crate::backends::MockBackend;
 use crate::frontend::compile;
-use crate::backends::Backend;
 
 fn make_strings(v: Vec<&str>) -> Vec<String> {
     v.into_iter().map(String::from).collect()

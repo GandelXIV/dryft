@@ -73,15 +73,6 @@ inline static void mod() {
   dryft_push(a % b);
 }
 
-/* deprecated
-inline static void puti() {
-  printf("%zu", dryft_pop());
-}
-
-inline static void putstr() {
-  printf("%s", (char*) dryft_pop());
-} */
-
 inline static void copy() {
   size_t a = dryft_pop();
   dryft_push(a);
