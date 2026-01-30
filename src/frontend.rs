@@ -389,7 +389,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.add2body(&backend.method_return());
         }
 
-        "var" => {
+        "var" | "var:" => {
             cs.defnstack.push(DefinitionTypes::Variable);
         }
 
@@ -491,6 +491,15 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             }
         }
 
+        "true" => {
+            add_builtin!(push_true);
+            cs.push_type(ValueTypes::Binary)
+        }
+
+        "false" => {
+            add_builtin!(push_false);
+            cs.push_type(ValueTypes::Binary)
+        }
         "+" => {
             cs.expect_types(&[ValueTypes::Number, ValueTypes::Number]);
             add_builtin!(fun_add);

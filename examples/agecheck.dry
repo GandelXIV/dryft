@@ -1,4 +1,4 @@
-include lib/std/io
+include: lib/std/io
 
 fun check
 	17 greater?

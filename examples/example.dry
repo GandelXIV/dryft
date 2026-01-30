@@ -1,6 +1,5 @@
 # Most of this is subject to change, this file serves as a testing ground for current features #
-include lib/std/io
-include lib/core/const
+include: lib/std/io
 
 fun inc 1 + ;
 
@@ -13,8 +12,8 @@ fun quadra
 
 # actions are functions that may have side effects #
 # calling an action from inside a function is illegal #
-act nl STR_NEWLINE prints ;
-act space STR_SPACE prints ;
+act nl "\n" prints ;
+act space " " prints ;
 
 # you can link-in external symbols #
 # note that using the FFI in this way is potentially unsafe #
@@ -49,8 +48,8 @@ act main
 
 10 10 + 20 =? then: "equals!\n" prints ;
 
-TRUE then:
-	TRUE then:
+true then:
+	true then:
 		"nested conditionals\n" prints
 	:then
 :then

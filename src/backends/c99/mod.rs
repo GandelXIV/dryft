@@ -150,4 +150,12 @@ impl Backend for C99Backend {
     fn push_string(&self, s: &str) -> String {
         format!("dryft_push(\"{s}\"); ")
     }
+
+    fn push_true(&self) -> &'static str {
+        "dryft_push(1); "
+    }
+
+    fn push_false(&self) -> &'static str {
+        "dryft_push(0); "
+    }
 }

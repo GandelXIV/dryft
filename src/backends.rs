@@ -28,6 +28,8 @@ pub trait Backend {
     // string format is not defined yet
     fn push_string(&self, s: &str) -> String;
     fn user_function(&self, f: &str) -> String; // CALL a user defined function
+    fn push_true(&self) -> &'static str { todo!() }
+    fn push_false(&self) -> &'static str { todo!() }
     fn linkin_function(&self, name: &str) -> String;
 
     fn fun_add(&self) -> &'static str;
