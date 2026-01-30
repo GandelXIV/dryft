@@ -32,9 +32,9 @@ fn ts_primitive() {
     // this is supposed to crash
     let result = panic::catch_unwind(|| {
         let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
-        compile(&mut backend, "act main \"text\" 1 + :act")
+        compile(&mut backend, "act main \"text\" 1 + :act");
     });
-    println!("{:?}", result);
+
     assert!(result.is_err(), "Expected type error panic");
 }
 

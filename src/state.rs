@@ -16,7 +16,7 @@
 */
 
 use std::collections::HashMap;
-use strum_macros::IntoStaticStr;
+use strum_macros::{Display, IntoStaticStr};
 
 #[derive(Debug, PartialEq, IntoStaticStr)]
 pub enum DefinitionTypes {
@@ -32,7 +32,7 @@ pub enum DefinitionTypes {
     Negative, // purely comparative, not actually constructed by code
 }
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug, Display)]
 pub enum ValueTypes {
     Number,
     Text,
@@ -127,29 +127,19 @@ impl CompileState {
         if cfg!(not(feature = "typesystem")) {
             return;
         }
-
+        
         let stack = self
             .typestack
             .last_mut()
-            .expect("type stack frame should exist");
+            .unwrap();
 
-        if stack.len() >= expected.len() {
-            let mut actual_types = Vec::new();
-            for _ in 0..expected.len() {
-                actual_types.push(stack.pop().expect("type should exist on stack"));
-            }
-            actual_types.reverse();
-
-            for (i, (&expected_type, &actual_type)) in
-                expected.iter().zip(actual_types.iter()).enumerate()
-            {
-                if actual_type != expected_type && expected_type != ValueTypes::Fake {
-                    self.throw_error(&format!(
-                        "Type mismatch at position {}: expected {:?}, got {:?}",
-                        i, expected_type, actual_type
-                    ));
+        for ex in expected.iter() {
+            if let Some(found) = stack.pop() {
+                if &found != ex {
+                    self.throw_error(&format!("Type mismatch : Expected {ex}, found {found}"))
                 }
             }
+            self.voidstack.last_mut().unwrap().push(*ex);
         }
     }
 
