@@ -37,7 +37,7 @@ pub enum ValueTypes {
     Number,
     Text,
     Binary,
-    Fake, // purely comparative, not actually constructed by code
+    Fake, // purely comparative, not actually represented in dryft
 }
 
 #[derive(Debug)]
@@ -127,20 +127,33 @@ impl CompileState {
         if cfg!(not(feature = "typesystem")) {
             return;
         }
-        
-        let stack = self
-            .typestack
-            .last_mut()
-            .unwrap();
+
+        let stack = self.typestack.last_mut().unwrap();
 
         for ex in expected.iter() {
             if let Some(found) = stack.pop() {
                 if &found != ex {
                     self.throw_error(&format!("Type mismatch : Expected {ex}, found {found}"))
                 }
+                continue;
             }
             self.voidstack.last_mut().unwrap().push(*ex);
         }
+    }
+
+    pub fn expect_no_type_footprint(&mut self) {
+        if cfg!(not(feature = "typesystem")) {
+            return;
+        }
+
+        let ret = self.typestack.pop().unwrap();
+        let void = self.voidstack.pop().unwrap();
+
+        if void != ret {
+            self.throw_error(&format!("Block returns {:?}, but consumes {:?}", ret, void));
+        }
+
+        self.expect_types(&void);
     }
 
     // checks that the action is not called inside any function scope
@@ -150,7 +163,7 @@ impl CompileState {
         }
     }
 
-    // does the variable exist in scope? the actual location is handled by the backend
+    // does the variable exist in scope? the actual data location is handled by the backend
     pub fn variable_in_scope(&self, vname: &str) -> Option<ValueTypes> {
         for scope in self.varscopes.iter() {
             if scope.contains_key(vname) {

@@ -163,6 +163,8 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             let body = cs.bodystack.pop().unwrap();
             cs.varscopes.pop();
 
+            cs.expect_no_type_footprint();
+
             let inelect = cs.defnstack.last().unwrap() == &DefinitionTypes::Elect;
 
             cs.add2body(&backend.create_conditional_statement(body, inelect));
@@ -180,6 +182,8 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         () => {
             let body = cs.bodystack.pop().unwrap();
             //cs.varscopes.pop();
+
+            cs.expect_no_type_footprint();
 
             cs.add2body(&backend.create_loop_block(body));
         };
@@ -342,9 +346,12 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         }
 
         "then" | "then:" => {
+            cs.expect_types(&[ValueTypes::Binary]);
             cs.defnstack.push(DefinitionTypes::Then);
             cs.grow_bodystack();
             cs.grow_varscopes();
+            cs.grow_typestack();
+            cs.grow_voidstack();
         }
 
         ":then" => {
@@ -364,6 +371,8 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         "loop" | "loop:" | "cycle" | "cycle:" => {
             cs.defnstack.push(DefinitionTypes::Loop);
             cs.grow_bodystack();
+            cs.grow_typestack();
+            cs.grow_voidstack();
         }
 
         ":loop" | ":cycle" => {
@@ -508,10 +517,10 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.push_type(ValueTypes::Number);
         }
         "^" | "copy" => {
-            let t = cs.pop_type();
+            cs.expect_types(&[ValueTypes::Number]);
             add_builtin!(fun_copy);
-            cs.push_type(t);
-            cs.push_type(t);
+            cs.push_type(ValueTypes::Number);
+            cs.push_type(ValueTypes::Number);
         }
         "v" | "drop" => {
             let _t = cs.pop_type();
@@ -530,7 +539,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             add_builtin!(fun_simple_equality);
             cs.push_type(ValueTypes::Binary);
         }
-        "nequals?" => {
+        "nequals?" | "!=?" => {
             let _t2 = cs.pop_type();
             let _t1 = cs.pop_type();
             add_builtin!(fun_simple_non_equality);

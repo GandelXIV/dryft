@@ -55,7 +55,7 @@ fn repl(targetspec: TargetSpec) {
                 println!(".view       => inspect the contents of generated IR from last execution")
             }
             ".view" => {
-                let mut ir = &String::from_utf8(fs::read(&targetspec.intermediate).unwrap()).unwrap();
+                let ir = &String::from_utf8(fs::read(&targetspec.intermediate).unwrap()).unwrap();
                 println!("{}", ir);
             }
             ".exit" | ".quit" => break,
