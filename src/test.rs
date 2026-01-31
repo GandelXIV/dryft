@@ -40,10 +40,55 @@ fn expect_dryft_err(code: &str, e: &str) {
 
 #[test]
 #[cfg(feature = "typesystem")]
+fn ts_internals() {
+    use crate::state::{CompileState, ValueTypes};
+
+    let mut cs = CompileState::new();
+
+    cs.grow_typestack();
+    cs.push_type(ValueTypes::Number);
+    cs.push_type(ValueTypes::Text);
+    cs.expect_types(&[ValueTypes::Text, ValueTypes::Number]);
+}
+
+// TODO: impl this to check if return order is correct in TS
+// #[test]
+// #[cfg(feature = "typesystem")]
+// fn ts_function_multi_return() {
+//     expect_dryft_err(
+//         "fun: foo
+//             0 true
+//         :fun
+
+//         act: main
+//             foo 1 +
+//         :act
+//         ",
+//         "",
+//     );
+// }
+
+#[test]
+#[cfg(feature = "typesystem")]
+fn ts_no_footprint() {
+    expect_dryft_err(
+        "act: main 
+            true var: predicate 
+            $predicate then: 1 ; 
+            printi 
+        :act",
+        "[DRYFT ERROR] <main>:3, word 4: Block returns [Number], but consumes []",
+    );
+}
+
+#[test]
+#[cfg(feature = "typesystem")]
 fn ts_primitive() {
     expect_dryft_err(
-        "act main \"text\" 1 + :act",
-        "[DRYFT ERROR] <main>:1, word 4: Type mismatch : Expected Number, found Text",
+        "act main 
+            \"text\" 1 + 
+        :act",
+        "[DRYFT ERROR] <main>:2, word 2: Type mismatch : Expected Number, found Text",
     );
 }
 
@@ -51,8 +96,12 @@ fn ts_primitive() {
 #[cfg(feature = "typesystem")]
 fn ts_variable_read() {
     expect_dryft_err(
-        "act main \"hello\" var x 5 var y $x $y + :act",
-        "[DRYFT ERROR] <main>:1, word 10: Type mismatch : Expected Number, found Text",
+        "act main 
+            \"hello\" var x 
+            5 var y 
+            $x $y + 
+        :act",
+        "[DRYFT ERROR] <main>:4, word 3: Type mismatch : Expected Number, found Text",
     );
 }
 
@@ -60,8 +109,11 @@ fn ts_variable_read() {
 #[cfg(feature = "typesystem")]
 fn ts_variable_write() {
     expect_dryft_err(
-        "act main 1 var x \"str\" x! :act",
-        "[DRYFT ERROR] <main>:1, word 6: Type mismatch : Expected Number, found Text",
+        "act main 
+            1 var x 
+            \"str\" x! 
+        :act",
+        "[DRYFT ERROR] <main>:3, word 1: Type mismatch : Expected Number, found Text",
     );
 }
 
@@ -69,8 +121,11 @@ fn ts_variable_write() {
 #[cfg(feature = "typesystem")]
 fn ts_function_inference() {
     expect_dryft_err(
-        "fun: inc 1 + ; act main true inc ;",
-        "[DRYFT ERROR] <main>:1, word 9: Type mismatch : Expected Number, found Binary",
+        "fun: inc 
+            1 + ; 
+         act: main 
+            true inc ;",
+        "[DRYFT ERROR] <main>:4, word 2: Type mismatch : Expected Number, found Binary",
     );
 }
 
@@ -82,7 +137,6 @@ fn simple_parse() {
         cs.log_tokens,
         make_strings(vec!["fun:", "inc", "1", "+", ":fun"])
     );
-    //assert_eq!(cs.defstack, vec![(DefinitionTypes::Function, make_strings(vec!["inc", "1", "+", ";"]))]);
 }
 
 #[test]
