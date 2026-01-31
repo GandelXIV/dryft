@@ -5,4 +5,4 @@
 - Linear types and stack based resource management 
 - Full (optional) type inference
 
-![example code](./examples/fizzbuzz.png "Future example code")
+![example code](./img/fizzbuzz.png "Fizzbuzz example code")
