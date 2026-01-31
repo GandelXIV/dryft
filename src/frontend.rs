@@ -18,6 +18,8 @@
 use crate::backends::Backend;
 use crate::state::CompileState;
 use crate::state::DefinitionTypes;
+use crate::state::Method;
+use crate::state::MethodClass;
 use crate::state::ValueTypes;
 use regex::Regex;
 use std::fs;
@@ -118,42 +120,33 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         }};
     }
 
-    macro_rules! add_function {
-        () => {
+    macro_rules! add_method {
+        ($variant:ident) => {
             let meta = cs.metastack.pop().unwrap();
             let body = cs.bodystack.pop().unwrap();
             let _ts = cs.typestack.pop().unwrap();
+
+            let class = crate::state::MethodClass::$variant;
 
             let fname = meta
                 .get(0)
-                .unwrap_or_else(|| cs.throw_error("No function name provided"));
+                .unwrap_or_else(|| cs.throw_error("No method name provided"));
 
-            if fname == "main" {
-                cs.throw_error("main must be defined as an action")
-            }
+            // if fname == "main" {
+            //     cs.throw_error("main must be defined as an action")
+            // }
 
             cs.varscopes.pop();
-            cs.functions.insert(fname.clone(), body.clone());
+            cs.methods.insert(
+                fname.clone(),
+                crate::state::Method {
+                    name: fname.clone(),
+                    code: body.clone(),
+                    class: class,
+                },
+            );
 
             let f = backend.create_function(fname.as_ref(), body);
-            cs.add2body(&f);
-        };
-    }
-
-    macro_rules! add_action {
-        () => {
-            let meta = cs.metastack.pop().unwrap();
-            let body = cs.bodystack.pop().unwrap();
-            let _ts = cs.typestack.pop().unwrap();
-
-            let aname = meta
-                .get(0)
-                .unwrap_or_else(|| cs.throw_error("No function name provided"));
-
-            cs.varscopes.pop();
-            cs.actions.insert(aname.clone(), body.clone());
-
-            let f = backend.create_function(aname.as_ref(), body);
             cs.add2body(&f);
         };
     }
@@ -233,34 +226,18 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
                 let class = meta.remove(0);
                 let mname = meta.remove(0);
 
-                match class.as_ref() {
-                    "fun" => cs.functions.insert(mname.clone(), "LINKED IN".to_string()),
-                    "act" => cs.actions.insert(mname.clone(), "LINKED IN".to_string()),
-                    other => cs.throw_error(&format!("Invalid link-in class {other}")),
-                };
-
-                cs.add2body(&backend.linkin_function(&mname));
-            }
-        }
-
-        x if *cs.defnstack.last().unwrap_or(&DefinitionTypes::Negative)
-            == DefinitionTypes::Linkin
-            && cs.metastack.last().unwrap().len() < 2 =>
-        {
-            cs.metastack.last_mut().unwrap().push(x.into());
-            // if we have all the arguments we needed
-            if cs.metastack.last_mut().unwrap().len() == 2 {
-                let mut meta = cs.metastack.pop().unwrap();
-                cs.defnstack.pop(); // end our defintion
-
-                let class = meta.remove(0);
-                let mname = meta.remove(0);
-
-                match class.as_ref() {
-                    "fun" => cs.functions.insert(mname.clone(), "LINKED IN".to_string()),
-                    "act" => cs.actions.insert(mname.clone(), "LINKED IN".to_string()),
-                    other => cs.throw_error(&format!("Invalid link-in class {other}")),
-                };
+                cs.methods.insert(
+                    mname.clone(),
+                    Method {
+                        name: mname.clone(),
+                        code: "LINKED IN".to_string(),
+                        class: match class.as_ref() {
+                            "fun" => MethodClass::Function,
+                            "act" => MethodClass::Action,
+                            other => cs.throw_error(&format!("Invalid link-in class {other}")),
+                        },
+                    },
+                );
 
                 cs.add2body(&backend.linkin_function(&mname));
             }
@@ -293,10 +270,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.defnstack.pop();
             let vname = v;
 
-            if cs.functions.contains_key(vname)
-                || cs.actions.contains_key(vname)
-                || cs.variable_in_scope(vname).is_some()
-            {
+            if cs.methods.contains_key(vname) || cs.variable_in_scope(vname).is_some() {
                 cs.throw_error(&format!(
                     "cant define variable, symbol {vname} is already taken"
                 ))
@@ -320,7 +294,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
         ":fun" => {
             check_terminator!(Function);
-            add_function!();
+            add_method!(Function);
         }
 
         "act:" | "act" => {
@@ -332,7 +306,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
         ":act" => {
             check_terminator!(Action);
-            add_action!();
+            add_method!(Action);
         }
 
         // this keyword is funamentally unsafe, consider adding changing to unsafe_linkin or something like that
@@ -414,10 +388,10 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             {
                 // keep {} notation instead of , for the macros to work
                 DefinitionTypes::Function => {
-                    add_function!();
+                    add_method!(Function);
                 }
                 DefinitionTypes::Action => {
-                    add_action!();
+                    add_method!(Action);
                 }
                 DefinitionTypes::Then => {
                     add_then_block!();
@@ -456,14 +430,14 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.metastack.last_mut().unwrap().push(aname.into())
         }
 
-        // body code must start here, as to not be confused for meta code
-        fun if cs.functions.contains_key(fun) => {
-            cs.add2body(&backend.user_function(fun));
-        }
+        // body code must start here
 
-        act if cs.actions.contains_key(act) => {
-            cs.before_action();
-            cs.add2body(&backend.user_function(act));
+        // if let Some(_) is experimental here, so double chcking is required
+        metname if cs.methods.contains_key(metname) => {
+            if cs.methods.get(metname).unwrap().class == MethodClass::Action {
+                cs.before_action();
+            }
+            cs.add2body(&backend.user_function(metname))
         }
 
         var if var.starts_with('$') => {

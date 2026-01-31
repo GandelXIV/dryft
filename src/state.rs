@@ -40,14 +40,27 @@ pub enum ValueTypes {
     Fake, // purely comparative, not actually represented in dryft
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum MethodClass {
+    Function,
+    Action,
+}
+
+#[derive(Debug)]
+pub struct Method {
+    pub name: String,
+    pub code: String,
+    pub class: MethodClass,
+}
+
 #[derive(Debug)]
 pub struct CompileState {
     pub out: Option<String>,     // access after compile() has been called
     pub log_tokens: Vec<String>, // purely for debugging usecases
 
-    pub functions: HashMap<String, String>,
-    pub actions: HashMap<String, String>,
-
+    pub methods: HashMap<String, Method>,
+    // pub functions: HashMap<String, String>,
+    // pub actions: HashMap<String, String>,
     pub word: String,
 
     pub defnstack: Vec<DefinitionTypes>,
@@ -78,8 +91,7 @@ impl CompileState {
             out: None,
             log_tokens: vec![],
             word: String::new(),
-            functions: HashMap::new(),
-            actions: HashMap::new(),
+            methods: HashMap::new(),
 
             defnstack: vec![],
             metastack: vec![],
