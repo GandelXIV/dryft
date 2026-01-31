@@ -122,9 +122,10 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
     macro_rules! add_method {
         ($variant:ident) => {
-            let meta = cs.metastack.pop().unwrap();
-            let body = cs.bodystack.pop().unwrap();
-            let _ts = cs.typestack.pop().unwrap();
+            let meta = cs.metastack.pop().expect("no meta");
+            let body = cs.bodystack.pop().expect("no body");
+            let ts = cs.typestack.pop().expect("no type");
+            let vs = cs.voidstack.pop().expect("no void");
 
             let class = crate::state::MethodClass::$variant;
 
@@ -139,10 +140,12 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             cs.varscopes.pop();
             cs.methods.insert(
                 fname.clone(),
-                crate::state::Method {
+                Method {
                     name: fname.clone(),
                     code: body.clone(),
                     class: class,
+                    itypes: ts,
+                    etypes: vs,
                 },
             );
 
@@ -236,6 +239,9 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
                             "act" => MethodClass::Action,
                             other => cs.throw_error(&format!("Invalid link-in class {other}")),
                         },
+                        // TODO: explicit typedef for linked in methods
+                        itypes: vec![],
+                        etypes: vec![],
                     },
                 );
 
@@ -310,6 +316,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         }
 
         // this keyword is funamentally unsafe, consider adding changing to unsafe_linkin or something like that
+        // or put it into an unsafe: block
         "linkin" => {
             cs.defnstack.push(DefinitionTypes::Linkin);
             cs.grow_metastack();
@@ -434,9 +441,11 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
 
         // if let Some(_) is experimental here, so double chcking is required
         metname if cs.methods.contains_key(metname) => {
-            if cs.methods.get(metname).unwrap().class == MethodClass::Action {
+            let met = cs.methods.get(metname).unwrap();
+            if met.class == MethodClass::Action {
                 cs.before_action();
             }
+            cs.expect_types(&met.itypes.clone());
             cs.add2body(&backend.user_function(metname))
         }
 

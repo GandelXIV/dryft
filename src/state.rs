@@ -51,6 +51,8 @@ pub struct Method {
     pub name: String,
     pub code: String,
     pub class: MethodClass,
+    pub itypes: Vec<ValueTypes>,
+    pub etypes: Vec<ValueTypes>,
 }
 
 #[derive(Debug)]
@@ -97,8 +99,8 @@ impl CompileState {
             metastack: vec![],
             bodystack: vec![String::new()],
             varscopes: vec![HashMap::new()],
-            typestack: vec![vec![]],
-            voidstack: vec![vec![]],
+            typestack: vec![],
+            voidstack: vec![],
 
             iscomment: false,
             isstring: false,
@@ -202,7 +204,7 @@ impl CompileState {
     }
 
     pub fn grow_voidstack(&mut self) {
-        self.typestack.push(vec![])
+        self.voidstack.push(vec![])
     }
 
     pub fn throw_error(&self, msg: &str) -> ! {
