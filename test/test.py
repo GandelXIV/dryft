@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import subprocess
 import difflib
+import sys
 
 result = subprocess.run(
     ["./a.out"],
@@ -8,23 +9,11 @@ result = subprocess.run(
     text=True
 )
 
-expected = """
-Hello World
-(6/2)(1+2) = 9
-6/(2(1+2)) = 1
-2
-6
-1 0
-0
-1
-1
-0
-equals!
-nested conditionals
-two
-18 < 20
- 0 1 2 3 4 5 6 7 8 9
-"""[1:] # remove blank line
+def rf(name):
+    with open(name, 'r') as f:
+        return f.read()
+
+expected = rf(sys.argv[1])
 
 diff = difflib.unified_diff(
     expected.splitlines(keepends=True),
@@ -37,5 +26,7 @@ print("".join(diff))
 
 if result.stdout == expected:
     print("Everything ok")
+    sys.exit(0)
 else:
     print("Something is differnet :{")
+    sys.exit(1)
