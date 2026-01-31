@@ -24,47 +24,54 @@ fn make_strings(v: Vec<&str>) -> Vec<String> {
     v.into_iter().map(String::from).collect()
 }
 
+// handle specific result for CompilerState::throw_error()
+#[cfg(feature = "typesystem")]
+fn expect_dryft_err(code: &str, e: &str) {
+    use std::panic;
+    let result = panic::catch_unwind(|| {
+        let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
+        compile(&mut backend, code);
+    });
+    assert_eq!(
+        e.to_string(),
+        *result.unwrap_err().downcast_ref::<String>().unwrap()
+    );
+}
+
 #[test]
 #[cfg(feature = "typesystem")]
 fn ts_primitive() {
-    use std::panic;
-
-    // this is supposed to crash
-    let result = panic::catch_unwind(|| {
-        let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
-        compile(&mut backend, "act main \"text\" 1 + :act");
-    });
-
-    assert!(result.is_err(), "Expected type error panic");
+    expect_dryft_err(
+        "act main \"text\" 1 + :act",
+        "[DRYFT ERROR] <main>:1, word 4: Type mismatch : Expected Number, found Text",
+    );
 }
 
 #[test]
 #[cfg(feature = "typesystem")]
 fn ts_variable_read() {
-    use std::panic;
-
-    // this is supposed to crash
-    let result = panic::catch_unwind(|| {
-        let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
-        compile(
-            &mut backend,
-            "act main \"hello\" var x 5 var y $x $y + :act",
-        )
-    });
-    assert!(result.is_err(), "Expected type error panic");
+    expect_dryft_err(
+        "act main \"hello\" var x 5 var y $x $y + :act",
+        "[DRYFT ERROR] <main>:1, word 10: Type mismatch : Expected Number, found Text",
+    );
 }
 
 #[test]
 #[cfg(feature = "typesystem")]
 fn ts_variable_write() {
-    use std::panic;
+    expect_dryft_err(
+        "act main 1 var x \"str\" x! :act",
+        "[DRYFT ERROR] <main>:1, word 6: Type mismatch : Expected Number, found Text",
+    );
+}
 
-    // this is supposed to crash
-    let result = panic::catch_unwind(|| {
-        let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
-        compile(&mut backend, "act main 1 var x \"str\" x! :act")
-    });
-    assert!(result.is_err(), "Expected type error panic");
+#[test]
+#[cfg(feature = "typesystem")]
+fn ts_function_inference() {
+    expect_dryft_err(
+        "fun: inc 1 + ; act main true inc ;",
+        "[DRYFT ERROR] <main>:1, word 9: Type mismatch : Expected Number, found Binary",
+    );
 }
 
 #[test]
