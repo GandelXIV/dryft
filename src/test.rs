@@ -88,16 +88,16 @@ fn simple_parse() {
 #[test]
 fn semicolon_ending() {
     let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
-    let mut cs = compile(&mut backend, "fun: id ;");
+    let cs = compile(&mut backend, "fun: id ;");
     let mut backend: Box<dyn Backend> = Box::new(MockBackend {});
-    let mut cs2 = compile(&mut backend, "fun: id :fun");
+    let cs2 = compile(&mut backend, "fun: id :fun");
     assert_eq!(cs.out, cs2.out);
 }
 
 #[test]
 fn function_compilation() {
     let mut backend: Box<dyn Backend> = Box::new(C99Backend {});
-    let mut cs = compile(&mut backend, "fun: sum3 + + :fun");
+    let cs = compile(&mut backend, "fun: sum3 + + :fun");
 
     assert_eq!(
         cs.out.unwrap(),
@@ -108,5 +108,5 @@ fn function_compilation() {
 #[test]
 fn strings() {
     let mut backend: Box<dyn Backend> = Box::new(C99Backend {});
-    let mut cs = compile(&mut backend, "fun idk \" # fake comment # \" ; ");
+    let cs = compile(&mut backend, "fun idk \" # fake comment # \" ; ");
 }
