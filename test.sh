@@ -3,11 +3,12 @@
 set -xe
 
 TS="python3 test/test.py"
+CR="cargo run --"
 
 RUSTFLAGS=-Awarnings cargo test
 
-RUSTFLAGS=-Awarnings cargo run -- example.dry -r
+$CR example.dry
 $TS test/example.txt
 
-RUSTFLAGS=-Awarnings cargo run -- examples/fizzbuzz.dry -r
+$CR examples/fizzbuzz.dry
 $TS test/fizzbuzz.txt
