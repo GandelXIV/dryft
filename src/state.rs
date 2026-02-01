@@ -76,6 +76,9 @@ pub struct CompileState {
     pub isstring: bool,
     pub newstring: String,
 
+    pub isannotation: bool,
+    pub annotation_content: String,
+
     pub prepend: String,
     pub prepend_remaining: usize, // characters remaining from current prepended content
 
@@ -94,6 +97,9 @@ impl CompileState {
             log_tokens: vec![],
             word: String::new(),
             methods: HashMap::new(),
+
+            isannotation: false,
+            annotation_content: String::new(),
 
             defnstack: vec![],
             metastack: vec![],

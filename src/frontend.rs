@@ -77,9 +77,17 @@ pub fn compile(backend: &mut Box<dyn Backend>, code: &str) -> CompileState {
                     cs.newstring.push(c);
                 }
             }
+            c if cs.isannotation => {
+                if c == ')' {
+                    cs.isannotation = false;
+                } else {
+                    cs.annotation_content.push(c);
+                }
+            }
             ' ' | '\n' | '\t' => new_token!(),
             '#' => cs.iscomment = true,
             '"' => cs.isstring = true,
+            '(' => cs.isannotation = true,
             other => cs.word.push(other),
         }
 
