@@ -161,7 +161,7 @@ pub struct Cli {
     pub inputfile: Option<PathBuf>,
 
     #[arg(short = 't', long = "target")]
-    #[arg(default_value = "cc")]
+    #[arg(default_value = "gcc")]
     /// One of the targets defined in src/targets/
     pub target: String,
 

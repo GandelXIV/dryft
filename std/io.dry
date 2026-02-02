@@ -1,0 +1,5 @@
+linkin act _x_print_string
+linkin act _x_print_int
+
+act prints _x_print_string ;
+act printi _x_print_int ;

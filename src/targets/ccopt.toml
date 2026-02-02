@@ -1,8 +1,0 @@
-[unix]
-backend = "C99"
-dependencies = [ "gcc" ]
-intermediate = "build/ir.c"
-stdlib = "gcc lib/std/std.c -c -fPIE -o build/stdc.o"
-assemble = "gcc -c -o build/ir.o -w -O3 build/ir.c"
-link = "gcc build/ir.o build/stdc.o -o a.out"
-interpret = "./a.out"

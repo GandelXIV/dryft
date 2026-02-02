@@ -34,12 +34,12 @@ void __size_t_to_string(size_t num, char *buf) {
 }
 
 
-void c_print_string() {
+void _x_print_string() {
 	char* a = (char*) dryft_pop();
 	fputs(a, stdout);
 }
 
-void c_print_int() {
+void _x_print_int() {
 	// dynamic allocation is not necessary, I used it to test if stdlib works fine
 	size_t a = dryft_pop();
 	char* buf = (char*) malloc(512);

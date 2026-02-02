@@ -1,4 +1,4 @@
-include: lib/std/io
+include: std/io
 
 # n! #
 fun: factorial var: n

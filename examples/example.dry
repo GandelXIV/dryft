@@ -1,5 +1,5 @@
 # Most of this is subject to change, this file serves as a testing ground for current features #
-include: lib/std/io
+include: std/io
 
 fun inc 1 + ;
 

@@ -1,4 +1,4 @@
-include: lib/std/io
+include: std/io
 
 act main
 	"Hello, World!\n" prints ;
