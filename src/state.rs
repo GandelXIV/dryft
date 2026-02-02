@@ -32,11 +32,12 @@ pub enum DefinitionTypes {
     Negative, // purely comparative, not actually constructed by code
 }
 
-#[derive(Clone, Copy, PartialEq, Debug, Display)]
+#[derive(Clone, PartialEq, Debug, Display)]
 pub enum ValueTypes {
     Number,
     Text,
     Binary,
+    Method(Vec<ValueTypes>, Vec<ValueTypes>),
     Fake, // purely comparative, not actually represented in dryft
 }
 
@@ -131,6 +132,12 @@ impl CompileState {
         self.typestack.last_mut().unwrap().push(t)
     }
 
+    pub fn push_types(&mut self, t: &[ValueTypes]) {
+        for ty in t {
+            self.push_type(ty.clone());
+        }
+    }
+
     pub fn pop_type(&mut self) -> ValueTypes {
         if cfg!(not(feature = "typesystem")) {
             return ValueTypes::Fake;
@@ -157,7 +164,7 @@ impl CompileState {
                 }
                 continue;
             }
-            self.voidstack.last_mut().unwrap().push(*ex);
+            self.voidstack.last_mut().unwrap().push(ex.clone());
         }
     }
 

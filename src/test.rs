@@ -52,21 +52,21 @@ fn ts_internals() {
 }
 
 // TODO: impl this to check if return order is correct in TS
-// #[test]
-// #[cfg(feature = "typesystem")]
-// fn ts_function_multi_return() {
-//     expect_dryft_err(
-//         "fun: foo
-//             0 true
-//         :fun
+#[test]
+#[cfg(feature = "typesystem")]
+fn ts_function_multi_return() {
+    expect_dryft_err(
+        "fun: foo
+            0 true
+        :fun
 
-//         act: main
-//             foo 1 +
-//         :act
-//         ",
-//         "",
-//     );
-// }
+        act: main
+            foo 1 +
+        :act
+        ",
+        "[DRYFT ERROR] <main>:6, word 1: Type mismatch : Expected Number, found Binary",
+    );
+}
 
 #[test]
 #[cfg(feature = "typesystem")]

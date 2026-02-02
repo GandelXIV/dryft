@@ -152,8 +152,8 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
                     name: fname.clone(),
                     code: body.clone(),
                     class: class,
-                    itypes: ts,
-                    etypes: vs,
+                    itypes: vs,
+                    etypes: ts,
                 },
             );
 
@@ -453,8 +453,11 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             if met.class == MethodClass::Action {
                 cs.before_action();
             }
-            cs.expect_types(&met.itypes.clone());
-            cs.add2body(&backend.user_function(metname))
+            let it = met.itypes.clone();
+            let et = met.etypes.clone();
+            cs.expect_types(&it);
+            cs.add2body(&backend.user_function(metname));
+            cs.push_types(&et);
         }
 
         var if var.starts_with('$') => {

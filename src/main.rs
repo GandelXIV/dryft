@@ -33,8 +33,8 @@ pub mod test;
 
 fn repl(targetspec: TargetSpec) {
     // temporary disable because of how the repl pastes code into main directly
-    if targetspec.backend == "NASM64" {
-        panic!("NASM64 unsupported for repl currently");
+    if targetspec.backend == "x86" {
+        panic!("x86 unsupported for repl currently");
     }
 
     loop {
