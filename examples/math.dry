@@ -1,8 +1,8 @@
 include: lib/std/io
 
 # n! #
-fun factorial var n
-	1 var result
+fun: factorial var: n
+	1 var: result
 	cycle: $n 0 =? then break ;
 		$result $n * result!
 		$n 1 - n!
@@ -11,29 +11,28 @@ fun factorial var n
 :fun
 
 # x ^ y #
-fun expo var x var y
-	1 var total
-	cycle $x 0 =? then break ;
+fun: expo 
+	var: x var: y
+	1 var: total
+	cycle: $x 0 =? then: break ;
 		$total $y * total!
 		$x 1 - x! 
 	:cycle
 	$total
 :fun
 
-# TODO: this doesnt compile with x,y var names. Clash with upper fun? #
-act safediv 
-	var b
-	var a
+act: safediv 
+	var: x var: y
 	when:
-		$b 0 equals? then "Division by zero" prints ; 
-		$a 0 equals? then 0 ;
-		$b 1 equals? then $a ;
-		$a $b / ;
+		$x 0 equals? then: "Division by zero" prints ; 
+		$y 0 equals? then: 0 ;
+		$x 1 equals? then: $y ;
+		$y $x / ;
 :act
 
-act main
+act: main
 	10 factorial printi "\n" prints
 	5 3 expo printi "\n" prints
-	5 1 safediv printi "\n" prints
-	5 0 safediv "\n" prints
+	6 1 safediv printi "\n" prints
+	4 0 safediv "\n" prints
 :act

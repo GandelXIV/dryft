@@ -285,6 +285,7 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             let vname = v;
 
             if cs.methods.contains_key(vname) || cs.variable_in_scope(vname).is_some() {
+                println!("{:?}", cs.varscopes);
                 cs.throw_error(&format!(
                     "cant define variable, symbol {vname} is already taken"
                 ))
@@ -367,7 +368,6 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
         ":loop" | ":cycle" => {
             check_terminator!(Loop);
             add_loop_block!();
-            cs.grow_varscopes();
         }
 
         "break" => {
