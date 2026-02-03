@@ -2,7 +2,7 @@
 backend = "C99"
 dependencies = [ "gcc" ]
 intermediate = "build/ir.c"
-stdlib = "gcc stdc/std.c -c -fPIE -o build/stdc.o"
+stdlib = "gcc native/stdc/std.c -c -fPIE -o build/stdc.o"
 assemble = "gcc -c -o build/ir.o -w build/ir.c"
 link = "gcc build/ir.o build/stdc.o -o a.out"
 interpret = "./a.out"
