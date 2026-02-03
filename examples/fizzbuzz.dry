@@ -1,9 +1,11 @@
 include: std/io 
 
-(Int Int -> Bool) fun: divby
+(Int Int -> Bool) 
+fun: divby
 	mod 0 =? ;
 
-(Int ->) act: fizzbuzz var: max
+(Int ->)
+act: fizzbuzz var: max
 	1 var: x
 	cycle: $x $max >? then: break ;
 		when: 
