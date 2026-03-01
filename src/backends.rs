@@ -81,6 +81,10 @@ pub trait Backend {
     fn create_elect_block(&self, _body: String) -> String {
         todo!()
     }
+
+    fn fun_exclusive_or(&self) -> &'static str {
+        todo!()
+    }
 }
 
 pub fn select(name: &str) -> Box<dyn Backend> {

@@ -143,6 +143,12 @@ inline static void num_less_than_or_equal() {
   dryft_push(a <= b);
 }
 
+inline static void bw_xor() {
+  size_t b = dryft_pop();
+  size_t a = dryft_pop();
+  dryft_push(a ^ b);
+}
+
 
 void dryft_main() {
   fun_main();

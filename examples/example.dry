@@ -75,4 +75,6 @@ cycle:
 	$i 1 + i!
 :cycle nl
 
+3 1 xor printi nl
+
 :act

@@ -20,6 +20,10 @@ use crate::backends::Backend;
 pub struct C99Backend {}
 
 impl Backend for C99Backend {
+    fn fun_exclusive_or(&self) -> &'static str {
+        "bw_xor(); "
+    }
+
     fn create_elect_block(&self, body: String) -> String {
         // __label__ has to be placed at the start of a block
         // we use do{}while(0) to create a simple unconditional run-once block

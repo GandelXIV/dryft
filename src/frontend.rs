@@ -583,6 +583,11 @@ fn handle_token(backend: &mut Box<dyn Backend>, cs: &mut CompileState) {
             add_builtin!(fun_num_less_than_or_equal);
             cs.push_type(ValueTypes::Binary);
         }
+        "xor" => {
+            cs.expect_types(&[ValueTypes::Number, ValueTypes::Number]);
+            add_builtin!(fun_exclusive_or);
+            cs.push_type(ValueTypes::Number);
+        }
 
         word => cs.throw_error(&format!("Unknown token '{}'", word)),
     }
