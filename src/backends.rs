@@ -16,7 +16,7 @@
 */
 
 pub mod c99;
-pub mod nasm64;
+pub mod x86;
 
 pub trait Backend {
     // insert the locally compiled snipet into the full holistic-program (with all its dependencies)
@@ -86,7 +86,7 @@ pub trait Backend {
 pub fn select(name: &str) -> Box<dyn Backend> {
     match name {
         "C99" => Box::new(c99::C99Backend {}),
-        "x86" => Box::new(nasm64::Nasm64Backend {}),
+        "x86" => Box::new(x86::Nasm64Backend {}),
         other => panic!("Invalid backend {other}"),
     }
 }

@@ -34,7 +34,7 @@ pub mod test;
 fn repl(targetspec: TargetSpec) {
     // temporary disable because of how the repl pastes code into main directly
     if targetspec.backend == "x86" {
-        panic!("x86 unsupported for repl currently");
+        println!("Warning: the x86 backend is not stable in the REPL environment");
     }
 
     loop {
