@@ -5,12 +5,14 @@ scope: source.dryft
 file_extensions:
   - dry
   - dryft
+
 contexts:
   main:
     - include: comments
     - include: type-block
     - include: type-signature
     - include: keywords
+    - include: colon-keywords
     - include: variables
     - include: definitions
     - include: strings
@@ -43,6 +45,10 @@ contexts:
     - match: '\)'
       scope: punctuation.section.group.end
       pop: true
+
+  colon-keywords:
+    - match: '\b[A-Za-z_][A-Za-z0-9_]*:'
+      scope: keyword.control.dryft
 
   variables:
     - match: '(\$|&)[A-Za-z_][A-Za-z0-9_]*|[A-Za-z_][A-Za-z0-9_]*!'
@@ -82,3 +88,4 @@ contexts:
     - match: '"'
       scope: punctuation.definition.string.end.dryft
       pop: true
+  

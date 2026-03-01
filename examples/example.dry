@@ -1,25 +1,25 @@
 # Most of this is subject to change, this file serves as a testing ground for current features #
 include: std/io
 
-fun inc 1 + ;
+fun: inc 1 + ;
 
-fun double
+fun: double
 	copy + ;
 
-fun quadra 
+fun: quadra 
 	double double 
 :fun
 
 # actions are functions that may have side effects #
 # calling an action from inside a function is illegal #
-act nl "\n" prints ;
-act space " " prints ;
+act: nl "\n" prints ;
+act: space " " prints ;
 
 # you can link-in external symbols #
 # note that using the FFI in this way is potentially unsafe #
 #linkin fun park#
 
-act main
+act: main
 
 "Hello World\n" prints
 
@@ -54,26 +54,25 @@ true then:
 	:then
 :then
 
-2 var x
-when
+2 var: x
+when:
 	$x 1 =? then: "one\n" ;
 	$x 2 =? then: "two\n" ;
 	$x 3 =? then: "three\n" ;
 	"something else\n" ;
 prints
 
-when 18 20 >=? then: 
+when: 18 20 >=? then: 
 	"18 >= 20!\n" ;
 	"18 < 20\n" ;
 prints
 
-10 var max
-0 var i
+10 var: max
+0 var: i
 cycle:
 	$i $max =? then break ;
 	space $i printi
 	$i 1 + i!
 :cycle nl
-
 
 :act
