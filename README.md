@@ -4,5 +4,3 @@
 - pure and impure function distinction 
 - Linear types and stack based resource management 
 - Full (optional) type inference
-
-![example code](./fizzbuzz.png "Fizzbuzz example code")
